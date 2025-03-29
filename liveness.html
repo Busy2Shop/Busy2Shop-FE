@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Liveness Detection - Vendor Verification</title>
+        <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f0f2f5;
+                color: #333;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #eee;
+            }
+
+            header h1 {
+                color: #f04950;
+                margin-bottom: 10px;
+            }
+
+            .video-container {
+                position: relative;
+                width: 100%;
+                max-width: 640px;
+                margin: 0 auto 30px;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            #video-element {
+                width: 100%;
+                background-color: #000;
+                display: block;
+                /* Mirror the video for selfie view */
+                transform: scaleX(-1);
+            }
+
+            #overlay-canvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                /* Mirror canvas to match video */
+                transform: scaleX(-1);
+            }
+
+            .challenge-container {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .challenge {
+                font-size: 24px;
+                font-weight: 500;
+                padding: 15px 20px;
+                background-color: #f04950;
+                color: white;
+                border-radius: 8px;
+                display: inline-block;
+                animation: pulse 1.5s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(0.98);
+                }
+                50% {
+                    transform: scale(1.02);
+                }
+                100% {
+                    transform: scale(0.98);
+                }
+            }
+
+            .countdown {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .status-message {
+                text-align: center;
+                margin-bottom: 20px;
+                padding: 15px;
+                border-radius: 8px;
+                background-color: #f8f9fa;
+            }
+
+            .status-message.success {
+                background-color: #d4edda;
+                color: #155724;
+            }
+
+            .status-message.error {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+
+            .status-message.warning {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+
+            #debug-info {
+                margin-top: 20px;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: #f8f9fa;
+                font-family: monospace;
+                font-size: 14px;
+                max-height: 200px;
+                overflow-y: auto;
+                display: none;
+            }
+
+            .controls {
+                display: flex;
+                justify-content: center;
+                margin-top: 30px;
+            }
+
+            button {
+                background-color: #f04950;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 16px;
+                font-weight: 500;
+                border-radius: 4px;
+                cursor: pointer;
+                margin: 0 10px;
+                transition: background-color 0.3s;
+            }
+
+            button:hover {
+                background-color: #e63c43;
+            }
+
+            button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+
+            #toggle-debug {
+                background-color: #6c757d;
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            #toggle-debug:hover {
+                background-color: #5a6268;
+            }
+
+            .progress-container {
+                width: 100%;
+                max-width: 640px;
+                margin: 0 auto 20px;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+            }
+
+            .progress-bar {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 15px;
+            }
+
+            .progress-step {
+                flex: 1;
+                text-align: center;
+                position: relative;
+                padding-top: 30px;
+            }
+
+            .progress-step::before {
+                content: "";
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 20px;
+                height: 20px;
+                background-color: #ccc;
+                border-radius: 50%;
+                z-index: 2;
+            }
+
+            .progress-step.completed::before {
+                background-color: #28a745;
+            }
+
+            .progress-step.active::before {
+                background-color: #f04950;
+            }
+
+            .progress-bar::after {
+                content: "";
+                position: absolute;
+                top: 10px;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background-color: #ccc;
+                z-index: 1;
+                margin: 8px 10% 0;
+            }
+
+            .results-container {
+                margin-top: 30px;
+                display: none;
+            }
+
+            .results-container.visible {
+                display: block;
+            }
+
+            .result-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 4px;
+                background-color: #f8f9fa;
+            }
+
+            .result-icon {
+                margin-right: 15px;
+                font-size: 24px;
+            }
+
+            .success-icon {
+                color: #28a745;
+            }
+
+            .error-icon {
+                color: #dc3545;
+            }
+
+            .result-details {
+                flex: 1;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            .face-guide {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 200px;
+                height: 250px;
+                border: 3px dashed rgba(240, 73, 80, 0.6);
+                border-radius: 100px 100px 100px 100px / 120px 120px 80px 80px;
+                z-index: 10;
+                box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.15);
+                transition: opacity 0.3s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Vendor Identity Verification</h1>
+                <p>Complete the liveness check to verify your identity</p>
+            </header>
+
+            <div class="progress-container">
+                <h3>Verification Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-step active" id="step-init">
+                        <div>Initialize</div>
+                    </div>
+                    <div class="progress-step" id="step-face">
+                        <div>Face Detection</div>
+                    </div>
+                    <div class="progress-step" id="step-challenge">
+                        <div>Challenges</div>
+                    </div>
+                    <div class="progress-step" id="step-verify">
+                        <div>Verification</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-message" id="status-message">Position your face in the camera frame and click "Start Verification" when ready.</div>
+
+            <div class="video-container">
+                <div class="face-guide" id="face-guide"></div>
+                <video id="video-element" autoplay playsinline muted></video>
+                <canvas id="overlay-canvas"></canvas>
+                <div class="countdown hidden" id="countdown">5</div>
+            </div>
+
+            <div class="challenge-container">
+                <div class="challenge hidden" id="challenge-text">Please look at the camera</div>
+            </div>
+
+            <div class="controls">
+                <button id="start-button">Start Verification</button>
+                <button id="retry-button" class="hidden">Try Again</button>
+                <button id="continue-button" class="hidden">Continue</button>
+            </div>
+
+            <div class="results-container" id="results-container">
+                <h3>Verification Results</h3>
+                <div class="result-item" id="result-face">
+                    <div class="result-icon">⏳</div>
+                    <div class="result-details">
+                        <h4>Face Detection</h4>
+                        <p>Verifying your face...</p>
+                    </div>
+                </div>
+                <div class="result-item" id="result-blink">
+                    <div class="result-icon">⏳</div>
+                    <div class="result-details">
+                        <h4>Blink Challenge</h4>
+                        <p>Waiting for completion...</p>
+                    </div>
+                </div>
+                <div class="result-item" id="result-turn">
+                    <div class="result-icon">⏳</div>
+                    <div class="result-details">
+                        <h4>Head Turn Challenge</h4>
+                        <p>Waiting for completion...</p>
+                    </div>
+                </div>
+                <div class="result-item" id="result-smile">
+                    <div class="result-icon">⏳</div>
+                    <div class="result-details">
+                        <h4>Smile Challenge</h4>
+                        <p>Waiting for completion...</p>
+                    </div>
+                </div>
+                <div class="result-item" id="result-spoofing">
+                    <div class="result-icon">⏳</div>
+                    <div class="result-details">
+                        <h4>Spoof Detection</h4>
+                        <p>Checking for authenticity...</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="toggle-debug" onclick="toggleDebugInfo()">Show Debug Info</button>
+            <div id="debug-info"></div>
+        </div>
+
+        <script>
+            // LivenessDetector.js code implementation
+            class LivenessDetector {
+                constructor(options = {}) {
+                    // Configuration options with defaults
+                    this.options = {
+                        // Minimum confidence threshold for face detection
+                        minDetectionConfidence: options.minDetectionConfidence || 0.7,
+
+                        // Maximum distance for face similarity comparison (lower = stricter)
+                        faceMatchThreshold: options.faceMatchThreshold || 0.4,
+
+                        // Eye aspect ratio threshold for blink detection (lower value = more closed)
+                        blinkThreshold: options.blinkThreshold || 0.2,
+
+                        // Minimum number of frames to analyze for each challenge
+                        minFramesPerChallenge: options.minFramesPerChallenge || 8,
+
+                        // Minimum head rotation angle (in degrees) to consider a turn valid
+                        minHeadRotationAngle: options.minHeadRotationAngle || 15,
+
+                        // Mouth open ratio threshold for smile detection
+                        smileThreshold: options.smileThreshold || 0.5,
+
+                        // Models path for face-api.js
+                        modelsPath: options.modelsPath || "/models",
+
+                        // Debug mode for development
+                        debug: options.debug || false,
+                    };
+
+                    // State
+                    this.isInitialized = false;
+                    this.faceDescriptors = [];
+                    this.landmarkHistory = [];
+                    this.challengeResults = {};
+                    this.frameBuffer = [];
+
+                    // Bind methods
+                    this.loadModels = this.loadModels.bind(this);
+                    this.detectFace = this.detectFace.bind(this);
+                    this.processFrame = this.processFrame.bind(this);
+                    this.verifyFaceConsistency = this.verifyFaceConsistency.bind(this);
+                    this.detectBlink = this.detectBlink.bind(this);
+                    this.detectHeadTurn = this.detectHeadTurn.bind(this);
+                    this.detectSmile = this.detectSmile.bind(this);
+                    this.detectSpoofing = this.detectSpoofing.bind(this);
+                    this.evaluateChallenge = this.evaluateChallenge.bind(this);
+                }
+
+                /**
+                 * Initialize by loading all required face-api.js models
+                 * @returns {Promise<void>}
+                 */
+                async loadModels() {
+                    if (this.isInitialized) return;
+
+                    try {
+                        const modelsPath = this.options.modelsPath;
+
+                        // Load required models
+                        await faceapi.nets.tinyFaceDetector.loadFromUri(modelsPath);
+                        await faceapi.nets.faceLandmark68Net.loadFromUri(modelsPath);
+                        await faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath);
+                        await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
+
+                        this.isInitialized = true;
+                        this.log("Models loaded successfully");
+                    } catch (error) {
+                        this.log("Error loading models:", error);
+                        throw new Error("Failed to initialize face detection models: " + error.message);
+                    }
+                }
+
+                /**
+                 * Detect face in an image or video frame
+                 * @param {HTMLImageElement|HTMLVideoElement|HTMLCanvasElement} mediaElement
+                 * @returns {Promise<FaceDetection|null>} Detected face with landmarks and descriptors
+                 */
+                async detectFace(mediaElement) {
+                    if (!this.isInitialized) {
+                        await this.loadModels();
+                    }
+
+                    try {
+                        // Use tiny face detector for better performance
+                        const detectionOptions = new faceapi.TinyFaceDetectorOptions({
+                            minConfidence: this.options.minDetectionConfidence,
+                        });
+
+                        // Detect face with landmarks, expressions and descriptor
+                        const detection = await faceapi
+                            .detectSingleFace(mediaElement, detectionOptions)
+                            .withFaceLandmarks()
+                            .withFaceExpressions()
+                            .withFaceDescriptor();
+
+                        if (!detection) {
+                            return null;
+                        }
+
+                        return detection;
+                    } catch (error) {
+                        this.log("Error during face detection:", error);
+                        return null;
+                    }
+                }
+
+                /**
+                 * Process a new frame from the camera
+                 * @param {HTMLVideoElement|HTMLCanvasElement} mediaElement Video or canvas element
+                 * @param {string} challengeType Current challenge type (e.g., 'blink', 'turnRight')
+                 * @returns {Promise<object>} Processing results including detection and challenge progress
+                 */
+                async processFrame(mediaElement, challengeType) {
+                    const detection = await this.detectFace(mediaElement);
+
+                    if (!detection) {
+                        return {
+                            faceDetected: false,
+                            message: "No face detected",
+                        };
+                    }
+
+                    // Store face descriptor if it's our first or a new reference point
+                    if (this.faceDescriptors.length === 0) {
+                        this.faceDescriptors.push(detection.descriptor);
+                        this.log("Reference face stored");
+                    }
+
+                    // Store landmarks for movement analysis
+                    this.landmarkHistory.push({
+                        landmarks: detection.landmarks,
+                        expressions: detection.expressions,
+                        timestamp: Date.now(),
+                    });
+
+                    // Trim history to last 30 frames
+                    if (this.landmarkHistory.length > 30) {
+                        this.landmarkHistory.shift();
+                    }
+
+                    // Add frame to buffer for the current challenge
+                    this.frameBuffer.push({
+                        detection,
+                        challengeType,
+                        timestamp: Date.now(),
+                    });
+
+                    // Process the current challenge
+                    const challengeResult = await this.evaluateChallenge(challengeType);
+
+                    // Check face consistency
+                    const isSamePerson = await this.verifyFaceConsistency(detection.descriptor);
+
+                    // Perform spoofing detection
+                    const spoofingResult = await this.detectSpoofing(mediaElement, detection);
+
+                    return {
+                        faceDetected: true,
+                        isSamePerson,
+                        challengeResult,
+                        spoofingResult,
+                        detection,
+                    };
+                }
+
+                /**
+                 * Verify that the current face matches previously seen faces
+                 * @param {Float32Array} currentDescriptor Face descriptor to compare
+                 * @returns {boolean} True if the face is consistent with previous frames
+                 */
+                async verifyFaceConsistency(currentDescriptor) {
+                    if (this.faceDescriptors.length === 0) {
+                        return true; // No previous descriptors to compare with
+                    }
+
+                    // Compare with the first descriptor as reference
+                    const referenceDescriptor = this.faceDescriptors[0];
+                    const distance = faceapi.euclideanDistance(referenceDescriptor, currentDescriptor);
+
+                    // Add current descriptor to history (for continuous verification)
+                    if (distance < this.options.faceMatchThreshold) {
+                        // Only store descriptors that generally match to avoid drift
+                        this.faceDescriptors.push(currentDescriptor);
+
+                        // Keep the array at a reasonable size
+                        if (this.faceDescriptors.length > 10) {
+                            this.faceDescriptors.shift();
+                        }
+                    }
+
+                    return distance < this.options.faceMatchThreshold;
+                }
+
+                /**
+                 * Calculate Eye Aspect Ratio (EAR) to detect blinks
+                 * @param {object} landmarks Face landmarks from face-api.js
+                 * @returns {number} Eye aspect ratio value
+                 */
+                calculateEAR(landmarks) {
+                    try {
+                        // Get eye landmark points (using standard 68-point model)
+                        const leftEye = landmarks.getLeftEye();
+                        const rightEye = landmarks.getRightEye();
+
+                        // Calculate the eye aspect ratio for each eye
+                        const leftEAR = this._getEyeAspectRatio(leftEye);
+                        const rightEAR = this._getEyeAspectRatio(rightEye);
+
+                        // Average the eye aspect ratio
+                        return (leftEAR + rightEAR) / 2.0;
+                    } catch (error) {
+                        this.log("Error calculating EAR:", error);
+                        return 1.0; // Default value (eyes open)
+                    }
+                }
+
+                /**
+                 * Calculate eye aspect ratio for a single eye
+                 * @param {Array} eyePoints Array of eye landmark points
+                 * @returns {number} Eye aspect ratio
+                 * @private
+                 */
+                _getEyeAspectRatio(eyePoints) {
+                    // Vertical eye landmarks distances
+                    const v1 = this._euclideanDistance(eyePoints[1], eyePoints[5]);
+                    const v2 = this._euclideanDistance(eyePoints[2], eyePoints[4]);
+
+                    // Horizontal eye landmark distance
+                    const h = this._euclideanDistance(eyePoints[0], eyePoints[3]);
+
+                    // Return the aspect ratio
+                    return (v1 + v2) / (2.0 * h);
+                }
+
+                /**
+                 * Calculate Euclidean distance between two points
+                 * @param {object} p1 Point 1 with x, y coordinates
+                 * @param {object} p2 Point 2 with x, y coordinates
+                 * @returns {number} Euclidean distance
+                 * @private
+                 */
+                _euclideanDistance(p1, p2) {
+                    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                }
+
+                /**
+                 * Detect blink in the current frame
+                 * @param {object} detection Face detection result
+                 * @returns {boolean} True if a blink is detected
+                 */
+                detectBlink(detection) {
+                    const landmarks = detection.landmarks;
+                    const ear = this.calculateEAR(landmarks);
+                    return ear < this.options.blinkThreshold;
+                }
+
+                /**
+                 * Detect head turn direction and magnitude
+                 * @param {object} detection Face detection result
+                 * @returns {object} Turn detection result with direction and angle
+                 */
+                detectHeadTurn(detection) {
+                    const landmarks = detection.landmarks;
+                    const jawPoints = landmarks.getJawOutline();
+                    const nose = landmarks.getNose();
+                    const noseTip = nose[nose.length - 1]; // Tip of the nose
+
+                    // Calculate the face center (midpoint between ears)
+                    const leftEar = jawPoints[0];
+                    const rightEar = jawPoints[jawPoints.length - 1];
+                    const faceCenter = {
+                        x: (leftEar.x + rightEar.x) / 2,
+                        y: (leftEar.y + rightEar.y) / 2,
+                    };
+
+                    // Calculate nose offset from center (indicates head rotation)
+                    const noseOffset = noseTip.x - faceCenter.x;
+
+                    // Normalize by face width to account for different distances from camera
+                    const faceWidth = rightEar.x - leftEar.x;
+                    const normalizedOffset = noseOffset / faceWidth;
+
+                    // Approximate angle in degrees (rough estimation)
+                    const estimatedAngle = normalizedOffset * 90;
+
+                    let direction = "center";
+                    if (normalizedOffset < -0.1) {
+                        direction = "left";
+                    } else if (normalizedOffset > 0.1) {
+                        direction = "right";
+                    }
+
+                    return {
+                        direction,
+                        angle: Math.abs(estimatedAngle),
+                        normalizedOffset,
+                    };
+                }
+
+                /**
+                 * Detect smile based on mouth landmarks and facial expressions
+                 * @param {object} detection Face detection result
+                 * @returns {boolean} True if a smile is detected
+                 */
+                detectSmile(detection) {
+                    try {
+                        // Use two approaches for better accuracy
+
+                        // 1. Use facial expressions API
+                        const expressions = detection.expressions;
+                        const expressionHappy = expressions.happy;
+
+                        // 2. Calculate mouth aspect ratio
+                        const landmarks = detection.landmarks;
+                        const mouthPoints = landmarks.getMouth();
+
+                        // Calculate mouth width and height
+                        const mouthWidth = this._euclideanDistance(mouthPoints[0], mouthPoints[6]);
+                        const mouthHeight = Math.max(
+                            this._euclideanDistance(mouthPoints[2], mouthPoints[10]),
+                            this._euclideanDistance(mouthPoints[3], mouthPoints[9]),
+                            this._euclideanDistance(mouthPoints[4], mouthPoints[8])
+                        );
+
+                        // Calculate ratio (higher value = more open smile)
+                        const mouthRatio = mouthHeight / mouthWidth;
+
+                        // Combine both methods (expressions API and geometric approach)
+                        return expressionHappy > 0.7 || mouthRatio > this.options.smileThreshold;
+                    } catch (error) {
+                        this.log("Error in smile detection:", error);
+                        return false;
+                    }
+                }
+
+                /**
+                 * Detect potential spoofing attempts
+                 * @param {HTMLElement} mediaElement Video or canvas element
+                 * @param {object} detection Face detection result
+                 * @returns {object} Spoofing detection result
+                 */
+                async detectSpoofing(mediaElement, detection) {
+                    try {
+                        // Basic implementation focuses on:
+                        // 1. Movement consistency (real faces have natural micro-movements)
+                        // 2. Texture analysis (simplified)
+                        // 3. Face proportions consistency
+
+                        // Check micro-movements in landmarks
+                        let microMovementScore = 0;
+                        if (this.landmarkHistory.length >= 5) {
+                            // Calculate variance in landmark positions over recent frames
+                            const recentHistory = this.landmarkHistory.slice(-5);
+                            const nosePositions = recentHistory.map((h) => {
+                                const nose = h.landmarks.getNose();
+                                const noseTip = nose[nose.length - 1];
+                                return { x: noseTip.x, y: noseTip.y };
+                            });
+
+                            // Calculate variance
+                            const varianceX = this._calculateVariance(nosePositions.map((p) => p.x));
+                            const varianceY = this._calculateVariance(nosePositions.map((p) => p.y));
+
+                            // Some variance is natural and expected for a real face
+                            const totalVariance = varianceX + varianceY;
+
+                            // Very low variance might indicate a photo
+                            // Very high variance might indicate unstable detection
+                            if (totalVariance > 0.5 && totalVariance < 30) {
+                                microMovementScore = 0.8;
+                            } else if (totalVariance > 0 && totalVariance <= 0.5) {
+                                microMovementScore = 0.3; // Suspiciously still
+                            } else {
+                                microMovementScore = 0.5; // Either too much movement or unknown
+                            }
+                        }
+
+                        // Basic texture analysis would go here
+                        // In a production system, you would:
+                        // 1. Extract patches around facial landmarks
+                        // 2. Apply texture descriptors (LBP, HOG, etc.)
+                        // 3. Run through a classifier trained to distinguish real/fake
+
+                        // For this implementation, we'll use a placeholder
+                        const textureScore = 0.7; // Placeholder - would be calculated in production
+
+                        // Overall liveness score (weighted combination)
+                        const livenessScore = microMovementScore * 0.7 + textureScore * 0.3;
+
+                        return {
+                            isLikelyReal: livenessScore > 0.6,
+                            score: livenessScore,
+                            details: {
+                                microMovements: microMovementScore,
+                                texture: textureScore,
+                            },
+                        };
+                    } catch (error) {
+                        this.log("Error in spoofing detection:", error);
+                        return {
+                            isLikelyReal: false,
+                            score: 0,
+                            error: error.message,
+                        };
+                    }
+                }
+
+                /**
+                 * Calculate variance of an array of numbers
+                 * @param {Array<number>} values Array of values
+                 * @returns {number} Variance
+                 * @private
+                 */
+                _calculateVariance(values) {
+                    const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+                    const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
+                    return squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
+                }
+
+                /**
+                 * Evaluate if a specific challenge has been successfully completed
+                 * @param {string} challengeType Type of challenge to evaluate
+                 * @returns {object} Challenge evaluation result
+                 */
+                async evaluateChallenge(challengeType) {
+                    // Filter frames for the current challenge
+                    const challengeFrames = this.frameBuffer.filter((f) => f.challengeType === challengeType);
+
+                    if (challengeFrames.length < this.options.minFramesPerChallenge) {
+                        return {
+                            completed: false,
+                            confidence: 0,
+                            message: "Not enough frames to evaluate challenge",
+                        };
+                    }
+
+                    let detectionCount = 0;
+                    let confidence = 0;
+
+                    // Process different challenge types
+                    switch (challengeType) {
+                        case "blink":
+                            // Look for sequence: eyes open -> closed -> open
+                            let blinkDetected = false;
+                            let eyesClosed = false;
+
+                            for (const frame of challengeFrames) {
+                                const isBlinking = this.detectBlink(frame.detection);
+
+                                if (!eyesClosed && isBlinking) {
+                                    eyesClosed = true;
+                                } else if (eyesClosed && !isBlinking) {
+                                    // Eyes were closed and now open again - blink completed
+                                    blinkDetected = true;
+                                    detectionCount++;
+                                }
+                            }
+
+                            confidence = blinkDetected ? 0.8 + Math.min(detectionCount, 3) * 0.05 : 0;
+                            return {
+                                completed: blinkDetected,
+                                confidence,
+                                message: blinkDetected ? "Blink detected" : "No blink detected",
+                            };
+
+                        case "turnRight":
+                        case "turnLeft":
+                            const expectedDirection = challengeType === "turnRight" ? "right" : "left";
+                            let maxAngle = 0;
+                            let correctDirectionDetected = false;
+
+                            for (const frame of challengeFrames) {
+                                const turnResult = this.detectHeadTurn(frame.detection);
+
+                                if (turnResult.direction === expectedDirection) {
+                                    correctDirectionDetected = true;
+                                    maxAngle = Math.max(maxAngle, turnResult.angle);
+
+                                    if (turnResult.angle >= this.options.minHeadRotationAngle) {
+                                        detectionCount++;
+                                    }
+                                }
+                            }
+
+                            // Evaluate success based on angle and consistency
+                            const angleThresholdMet = maxAngle >= this.options.minHeadRotationAngle;
+                            const sufficientDetections = detectionCount >= 3;
+
+                            confidence = correctDirectionDetected ? 0.4 + (maxAngle / 90) * 0.4 + (sufficientDetections ? 0.2 : 0) : 0;
+
+                            return {
+                                completed: angleThresholdMet && sufficientDetections,
+                                confidence,
+                                maxAngle,
+                                message: angleThresholdMet
+                                    ? `${expectedDirection.charAt(0).toUpperCase() + expectedDirection.slice(1)} turn detected`
+                                    : `No ${expectedDirection} turn detected`,
+                            };
+
+                        case "smile":
+                            let smileDetected = false;
+
+                            for (const frame of challengeFrames) {
+                                const isSmiling = this.detectSmile(frame.detection);
+
+                                if (isSmiling) {
+                                    smileDetected = true;
+                                    detectionCount++;
+                                }
+                            }
+
+                            // Need consistent smile detection across multiple frames
+                            confidence = smileDetected ? 0.6 + Math.min(detectionCount, 5) * 0.08 : 0;
+                            return {
+                                completed: smileDetected && detectionCount >= 3,
+                                confidence,
+                                message: smileDetected ? "Smile detected" : "No smile detected",
+                            };
+
+                        default:
+                            return {
+                                completed: false,
+                                confidence: 0,
+                                message: `Unknown challenge type: ${challengeType}`,
+                            };
+                    }
+                }
+
+                /**
+                 * Reset the detector state for a new verification session
+                 */
+                reset() {
+                    this.faceDescriptors = [];
+                    this.landmarkHistory = [];
+                    this.challengeResults = {};
+                    this.frameBuffer = [];
+                }
+
+                /**
+                 * Log messages if debug is enabled
+                 * @param {...any} args Arguments to log
+                 */
+                log(...args) {
+                    if (this.options.debug) {
+                        console.log("[LivenessDetector]", ...args);
+                    }
+                }
+            }
+
+            // Main application code
+            document.addEventListener("DOMContentLoaded", async () => {
+                // DOM Elements
+                const videoElement = document.getElementById("video-element");
+                const overlayCanvas = document.getElementById("overlay-canvas");
+                const context = overlayCanvas.getContext("2d");
+                const statusMessage = document.getElementById("status-message");
+                const countdownEl = document.getElementById("countdown");
+                const challengeText = document.getElementById("challenge-text");
+                const startButton = document.getElementById("start-button");
+                const retryButton = document.getElementById("retry-button");
+                const continueButton = document.getElementById("continue-button");
+                const resultsContainer = document.getElementById("results-container");
+                const debugInfo = document.getElementById("debug-info");
+
+                // Result Elements
+                const resultFace = document.getElementById("result-face");
+                const resultBlink = document.getElementById("result-blink");
+                const resultTurn = document.getElementById("result-turn");
+                const resultSmile = document.getElementById("result-smile");
+                const resultSpoofing = document.getElementById("result-spoofing");
+
+                // Progress Step Elements
+                const stepInit = document.getElementById("step-init");
+                const stepFace = document.getElementById("step-face");
+                const stepChallenge = document.getElementById("step-challenge");
+                const stepVerify = document.getElementById("step-verify");
+
+                // State variables
+                let stream = null;
+                let detector = null;
+                let animationFrameId = null;
+                let challengeIndex = 0;
+                let currentChallenge = null;
+                let challengeTimer = null;
+                let countdownTimer = null;
+                let currentCount = 5;
+                let isProcessing = false;
+                let allChallengesComplete = false;
+
+                // Challenge sequence
+                const challenges = [
+                    { type: "blink", instruction: "Please blink slowly", duration: 5 },
+                    { type: "turnLeft", instruction: "Please turn your head to the left", duration: 5 },
+                    { type: "turnRight", instruction: "Please turn your head to the right", duration: 5 },
+                    { type: "smile", instruction: "Please smile", duration: 5 },
+                ];
+
+                // Initialize liveness detector
+                async function initializeLivenessDetector() {
+                    try {
+                        updateStatus("Initializing face detection...", "warning");
+
+                        detector = new LivenessDetector({
+                            debug: true,
+                            modelsPath: "https://justadudewhohacks.github.io/face-api.js/models",
+                        });
+
+                        await detector.loadModels();
+
+                        stepInit.classList.add("completed");
+                        updateStatus("Face detection initialized. Position your face in the camera frame.", "success");
+                        startButton.disabled = false;
+
+                        debug("Liveness detector initialized");
+                    } catch (error) {
+                        updateStatus("Failed to initialize face detection: " + error.message, "error");
+                        debug("Initialization error: " + error.message);
+                    }
+                }
+
+                // Initialize camera
+                async function initializeCamera() {
+                    try {
+                        // Request camera access
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                facingMode: "user",
+                                width: { ideal: 640 },
+                                height: { ideal: 480 },
+                            },
+                        });
+
+                        // Set video source
+                        videoElement.srcObject = stream;
+
+                        // Wait for video metadata to load
+                        await new Promise((resolve) => {
+                            videoElement.onloadedmetadata = () => {
+                                resolve();
+                            };
+                        });
+
+                        // Start playing video
+                        await videoElement.play();
+
+                        // Set canvas dimensions to match video
+                        overlayCanvas.width = videoElement.videoWidth;
+                        overlayCanvas.height = videoElement.videoHeight;
+
+                        debug(`Camera initialized: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+
+                        // Initialize liveness detector after camera is ready
+                        await initializeLivenessDetector();
+                    } catch (error) {
+                        updateStatus("Error accessing camera: " + error.message, "error");
+                        debug("Camera error: " + error.message);
+                    }
+                }
+
+                // Update status message
+                function updateStatus(message, type = "") {
+                    statusMessage.textContent = message;
+                    statusMessage.className = "status-message";
+
+                    if (type) {
+                        statusMessage.classList.add(type);
+                    }
+
+                    debug("Status: " + message);
+                }
+
+                // Start verification process
+                async function startVerification() {
+                    if (!detector || !detector.isInitialized) {
+                        updateStatus("Face detection not initialized. Please try again.", "error");
+                        return;
+                    }
+
+                    // Reset state
+                    challengeIndex = 0;
+                    currentChallenge = null;
+                    allChallengesComplete = false;
+                    detector.reset();
+
+                    clearTimers();
+
+                    // Update UI
+                    startButton.disabled = true;
+                    startButton.classList.add("hidden");
+                    resultsContainer.classList.add("hidden");
+                    retryButton.classList.add("hidden");
+                    continueButton.classList.add("hidden");
+
+                    resetResults();
+
+                    // Start face detection
+                    stepFace.classList.add("active");
+                    updateStatus("Looking for your face. Please look directly at the camera.", "warning");
+
+                    // Start processing frames
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
+
+                    isProcessing = true;
+                    processFrames();
+                }
+
+                // Process video frames
+                async function processFrames() {
+                    if (!isProcessing) return;
+
+                    if (!currentChallenge) {
+                        // Initial face detection mode
+                        try {
+                            const faceDetection = await detector.detectFace(videoElement);
+
+                            if (faceDetection) {
+                                // Draw face landmarks
+                                drawFaceLandmarks(faceDetection);
+
+                                // Face found, mark face detection as complete
+                                stepFace.classList.add("completed");
+                                updateResult(resultFace, true, "Face detected successfully");
+
+                                // Hide face guide once face is detected
+                                document.getElementById("face-guide").style.opacity = "0";
+
+                                // Start challenge sequence
+                                if (!currentChallenge) {
+                                    startChallengeSequence();
+                                }
+                            } else {
+                                // Clear canvas if no face
+                                clearCanvas();
+                                updateStatus("No face detected. Please look directly at the camera.", "warning");
+                            }
+                        } catch (error) {
+                            debug("Error processing frame: " + error.message);
+                        }
+                    } else {
+                        // Challenge mode
+                        if (!isProcessing) return;
+
+                        try {
+                            const result = await detector.processFrame(videoElement, currentChallenge.type);
+
+                            if (result.faceDetected) {
+                                // Draw face landmarks
+                                drawFaceLandmarks(result.detection);
+
+                                // Update debug info
+                                if (result.challengeResult) {
+                                    debug(`Challenge ${currentChallenge.type}: Confidence ${result.challengeResult.confidence.toFixed(2)}`);
+                                }
+
+                                // Check face consistency
+                                if (!result.isSamePerson) {
+                                    updateStatus("Face changed! Please maintain the same face throughout verification.", "error");
+                                }
+
+                                // Update spoofing result
+                                if (result.spoofingResult) {
+                                    const spoofScore = result.spoofingResult.score.toFixed(2);
+                                    debug(`Spoof detection: Score ${spoofScore} (${result.spoofingResult.isLikelyReal ? "Real" : "Suspicious"})`);
+
+                                    if (!result.spoofingResult.isLikelyReal) {
+                                        updateStatus("Possible spoofing detected. Please ensure you are using a real camera.", "warning");
+                                        updateResult(resultSpoofing, false, "Possible spoofing detected");
+                                    } else {
+                                        updateResult(resultSpoofing, true, "Real face verified");
+                                    }
+                                }
+                            } else {
+                                // Clear canvas if no face
+                                clearCanvas();
+                                // Show face guide when no face is detected
+                                document.getElementById("face-guide").style.opacity = "1";
+                                updateStatus("No face detected. Please look directly at the camera.", "warning");
+                            }
+                        } catch (error) {
+                            debug("Error processing challenge frame: " + error.message);
+                        }
+                    }
+
+                    // Continue processing frames
+                    animationFrameId = requestAnimationFrame(processFrames);
+                }
+
+                // Start the challenge sequence
+                function startChallengeSequence() {
+                    // Show the challenge container
+                    stepChallenge.classList.add("active");
+
+                    // Start the first challenge
+                    startNextChallenge();
+                }
+
+                // Start the next challenge
+                function startNextChallenge() {
+                    if (challengeIndex >= challenges.length) {
+                        // All challenges completed
+                        completeVerification();
+                        return;
+                    }
+
+                    // Get the current challenge
+                    currentChallenge = challenges[challengeIndex];
+
+                    // Show challenge instruction
+                    challengeText.textContent = currentChallenge.instruction;
+                    challengeText.classList.remove("hidden");
+
+                    // Show countdown
+                    currentCount = currentChallenge.duration;
+                    countdownEl.textContent = currentCount;
+                    countdownEl.classList.remove("hidden");
+
+                    // Clear previous buffer
+                    detector.frameBuffer = [];
+
+                    // Update status
+                    updateStatus(currentChallenge.instruction, "warning");
+
+                    // Start countdown
+                    countdownTimer = setInterval(() => {
+                        currentCount--;
+                        countdownEl.textContent = currentCount;
+
+                        if (currentCount <= 0) {
+                            clearInterval(countdownTimer);
+                            finishCurrentChallenge();
+                        }
+                    }, 1000);
+
+                    debug(`Starting challenge: ${currentChallenge.type}`);
+                }
+
+                // Finish the current challenge
+                async function finishCurrentChallenge() {
+                    // Hide countdown and challenge text
+                    countdownEl.classList.add("hidden");
+                    challengeText.classList.add("hidden");
+
+                    // Evaluate the challenge result
+                    const result = await detector.evaluateChallenge(currentChallenge.type);
+
+                    debug(`Challenge ${currentChallenge.type} result: ${JSON.stringify(result)}`);
+
+                    // Update the corresponding result
+                    let challengeSuccess = false;
+
+                    switch (currentChallenge.type) {
+                        case "blink":
+                            challengeSuccess = result.completed && result.confidence > 0.7;
+                            updateResult(
+                                resultBlink,
+                                challengeSuccess,
+                                challengeSuccess ? "Blink detected successfully" : "Blink not detected clearly"
+                            );
+                            break;
+
+                        case "turnLeft":
+                        case "turnRight":
+                            const direction = currentChallenge.type === "turnLeft" ? "left" : "right";
+                            challengeSuccess = result.completed && result.confidence > 0.6;
+                            updateResult(
+                                resultTurn,
+                                challengeSuccess,
+                                challengeSuccess ? `Head turn to ${direction} detected` : `Head turn to ${direction} not detected clearly`
+                            );
+                            break;
+
+                        case "smile":
+                            challengeSuccess = result.completed && result.confidence > 0.7;
+                            updateResult(
+                                resultSmile,
+                                challengeSuccess,
+                                challengeSuccess ? "Smile detected successfully" : "Smile not detected clearly"
+                            );
+                            break;
+                    }
+
+                    // Move to next challenge
+                    challengeIndex++;
+
+                    // Pause briefly before next challenge
+                    setTimeout(() => {
+                        startNextChallenge();
+                    }, 1000);
+                }
+
+                // Complete the verification process
+                function completeVerification() {
+                    // Stop processing
+                    isProcessing = false;
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+
+                    // Mark challenges as complete
+                    stepChallenge.classList.add("completed");
+                    stepVerify.classList.add("active");
+                    stepVerify.classList.add("completed");
+
+                    // Check overall results
+                    const allResultsSuccessful =
+                        resultFace.classList.contains("success") &&
+                        resultBlink.classList.contains("success") &&
+                        resultTurn.classList.contains("success") &&
+                        resultSmile.classList.contains("success") &&
+                        resultSpoofing.classList.contains("success");
+
+                    // Show final result
+                    if (allResultsSuccessful) {
+                        updateStatus("Verification successful! Your identity has been confirmed.", "success");
+                        continueButton.classList.remove("hidden");
+                        allChallengesComplete = true;
+                    } else {
+                        updateStatus("Verification incomplete. Some challenges were not completed successfully.", "error");
+                        retryButton.classList.remove("hidden");
+                    }
+
+                    // Show results container
+                    resultsContainer.classList.remove("hidden");
+
+                    debug("Verification process completed");
+                }
+
+                // Draw face landmarks on the canvas
+                function drawFaceLandmarks(detection) {
+                    // Clear the canvas
+                    clearCanvas();
+
+                    // Draw face box
+                    const box = detection.detection.box;
+                    context.strokeStyle = "#4CAF50";
+                    context.lineWidth = 2;
+                    context.strokeRect(box.x, box.y, box.width, box.height);
+
+                    // Draw face landmarks
+                    context.fillStyle = "#4CAF50";
+
+                    // Draw points for eyes
+                    const landmarks = detection.landmarks;
+                    const leftEye = landmarks.getLeftEye();
+                    const rightEye = landmarks.getRightEye();
+                    const nose = landmarks.getNose();
+                    const mouth = landmarks.getMouth();
+
+                    // Draw eyes
+                    drawPoints(leftEye, 2);
+                    drawPoints(rightEye, 2);
+
+                    // Draw nose
+                    drawPoints(nose, 2);
+
+                    // Draw mouth
+                    context.fillStyle = "#FFA726";
+                    drawPoints(mouth, 2);
+
+                    // Draw jaw outline
+                    context.fillStyle = "#42A5F5";
+                    const jawOutline = landmarks.getJawOutline();
+                    drawPoints(jawOutline, 2);
+                }
+
+                // Draw an array of points
+                function drawPoints(points, radius) {
+                    points.forEach((point) => {
+                        context.beginPath();
+                        context.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+                        context.fill();
+                    });
+                }
+
+                // Clear the canvas
+                function clearCanvas() {
+                    context.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                }
+
+                // Update a result item
+                function updateResult(element, success, message) {
+                    // Update icon
+                    const iconElement = element.querySelector(".result-icon");
+                    iconElement.textContent = success ? "✓" : "✗";
+                    iconElement.className = "result-icon " + (success ? "success-icon" : "error-icon");
+
+                    // Update message
+                    const detailsElement = element.querySelector(".result-details p");
+                    detailsElement.textContent = message;
+
+                    // Update class
+                    element.className = "result-item " + (success ? "success" : "error");
+                }
+
+                // Reset all results
+                function resetResults() {
+                    const results = [resultFace, resultBlink, resultTurn, resultSmile, resultSpoofing];
+
+                    results.forEach((element) => {
+                        const iconElement = element.querySelector(".result-icon");
+                        iconElement.textContent = "⏳";
+                        iconElement.className = "result-icon";
+
+                        const detailsElement = element.querySelector(".result-details p");
+                        detailsElement.textContent = "Waiting for verification...";
+
+                        element.className = "result-item";
+                    });
+                    // Show face guide again
+                    document.getElementById("face-guide").style.opacity = "1";
+                }
+
+                // Debug logging
+                function debug(message) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const logEntry = document.createElement("div");
+                    logEntry.textContent = `[${timestamp}] ${message}`;
+                    debugInfo.appendChild(logEntry);
+
+                    // Scroll to bottom
+                    debugInfo.scrollTop = debugInfo.scrollHeight;
+
+                    // Keep only the last 100 entries
+                    while (debugInfo.childNodes.length > 100) {
+                        debugInfo.removeChild(debugInfo.firstChild);
+                    }
+                }
+
+                // Clear timers
+                function clearTimers() {
+                    if (challengeTimer) clearTimeout(challengeTimer);
+                    if (countdownTimer) clearInterval(countdownTimer);
+                }
+
+                // Toggle debug info
+                window.toggleDebugInfo = function () {
+                    const isVisible = debugInfo.style.display !== "none";
+                    debugInfo.style.display = isVisible ? "none" : "block";
+                    document.getElementById("toggle-debug").textContent = isVisible ? "Show Debug Info" : "Hide Debug Info";
+                };
+
+                // Event listeners
+                startButton.addEventListener("click", startVerification);
+
+                retryButton.addEventListener("click", () => {
+                    retryButton.classList.add("hidden");
+                    startButton.classList.remove("hidden");
+                    startButton.disabled = false;
+
+                    // Reset steps
+                    stepChallenge.classList.remove("completed");
+                    stepVerify.classList.remove("completed");
+                    stepVerify.classList.remove("active");
+
+                    updateStatus('Ready to retry verification. Click "Start Verification" when ready.', "");
+                });
+
+                continueButton.addEventListener("click", () => {
+                    // In a real application, this would proceed to the next step of the onboarding flow
+                    alert("Verification successful! Proceeding to next step of vendor onboarding.");
+                });
+
+                // Clean up on unload
+                window.addEventListener("beforeunload", () => {
+                    if (stream) {
+                        stream.getTracks().forEach((track) => track.stop());
+                    }
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
+                    clearTimers();
+                });
+
+                // Initialize the application
+                initializeCamera();
+            });
+        </script>
+    </body>
+</html>
