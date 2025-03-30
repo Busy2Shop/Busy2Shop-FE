@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Plus, Twitter, Facebook, Instagram } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { useState } from "react"
 
 // Food items for Shop by Ingredients section
@@ -127,14 +128,14 @@ export default function HomeContent() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {markets.map((market, index) => (
-                        <div key={index} className="border rounded-lg overflow-hidden">
+                        <Link href="/markets" key={index} className="border rounded-lg overflow-hidden">
                             <div className="h-[150px] relative">
                                 <Image src={market.image || "/placeholder.svg"} alt={market.name} fill className="object-cover" />
                             </div>
                             <div className="p-3 text-center">
                                 <h3 className="font-medium">{market.name}</h3>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
