@@ -60,7 +60,7 @@ export const otpSchema = z
         message: "OTP must contain only numbers",
     })
 
-// Profile setup - personal info validation schema
+// Profile setup - personal info validation schema (for customers)
 export const personalInfoSchema = z.object({
     firstName: z.string().min(1, {
         message: "First name is required",
@@ -79,10 +79,63 @@ export const personalInfoSchema = z.object({
     countryCode: z.string(),
 })
 
-// Profile setup - location validation schema
+// Profile setup - location validation schema (for customers)
 export const locationSchema = z.object({
     location: z.string().optional(),
     address: z.string().min(1, {
         message: "Address is required",
     }),
+})
+
+
+// Agent registration validation schema
+export const agentRegistrationSchema = z.object({
+    firstName: z.string().min(1, {
+        message: "First name is required",
+    }),
+    lastName: z.string().min(1, {
+        message: "Last name is required",
+    }),
+    phoneNumber: z
+        .string()
+        .min(10, {
+            message: "Phone number must be at least 10 digits",
+        })
+        .regex(/^\d+$/, {
+            message: "Phone number must contain only numbers",
+        }),
+    countryCode: z.string(),
+    email: emailSchema,
+    password: passwordSchema,
+    state: z.string().min(1, {
+        message: "State is required",
+    }),
+    address: z.string().min(1, {
+        message: "Address is required",
+    }),
+    nin: z
+        .string()
+        .min(11, {
+            message: "NIN must be at least 11 digits",
+        })
+        .regex(/^\d+$/, {
+            message: "NIN must contain only numbers",
+        }),
+    ninSlip: z.string().min(1, {
+        message: "NIN slip is required",
+    }),
+    proofOfAddress: z.string().min(1, {
+        message: "Proof of address is required",
+    }),
+    market: z.string().min(1, {
+        message: "Market is required",
+    }),
+    referralsName: z.string().optional(),
+    referralsPhoneNumber: z
+        .string()
+        .regex(/^\d*$/, {
+            message: "Phone number must contain only numbers",
+        })
+        .optional(),
+    referralsCountryCode: z.string().optional(),
 })

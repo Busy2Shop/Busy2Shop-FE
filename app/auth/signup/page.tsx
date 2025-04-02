@@ -86,7 +86,12 @@ export default function SignUpPage() {
 
             // In a real app, you would submit the form and create the account
             console.log("Form data is valid:", formData)
-            router.push("/auth/otp-verification")
+            // Redirect based on role
+            if (role === "individual") {
+                router.push("/auth/otp-verification")
+            } else if (role === "agent") {
+                router.push("/auth/agent-registration")
+            }
         } catch (error) {
             if (error instanceof z.ZodError) {
                 // Convert ZodError to a more usable format
