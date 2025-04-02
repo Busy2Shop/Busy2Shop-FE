@@ -4,78 +4,136 @@ import { useState } from "react"
 import { ArrowLeft, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { z } from "zod"
+import { personalInfoSchema, locationSchema } from "@/lib/validations/auth"
+
+type PersonalInfoFormData = z.infer<typeof personalInfoSchema>
+type LocationFormData = z.infer<typeof locationSchema>
 
 export default function ProfileSetupPage() {
     const router = useRouter()
     const [step, setStep] = useState(1)
 
     // Personal info state
-    const [firstName, setFirstName] = useState("")
-    const [lastName, setLastName] = useState("")
-    const [phoneNumber, setPhoneNumber] = useState("")
-    const [countryCode, setCountryCode] = useState("+234") // Nigeria
+    const [personalInfo, setPersonalInfo] = useState<PersonalInfoFormData>({
+        firstName: "",
+        lastName: "",
+        phoneNumber: "",
+        countryCode: "+234", // Nigeria
+    })
 
     // Location state
-    const [location, setLocation] = useState("")
-    const [address, setAddress] = useState("")
+    const [locationInfo, setLocationInfo] = useState<LocationFormData>({
+        location: "",
+        address: "",
+    })
 
     // Validation states
-    const [firstNameError, setFirstNameError] = useState("")
-    const [lastNameError, setLastNameError] = useState("")
-    const [phoneNumberError, setPhoneNumberError] = useState("")
-    const [addressError, setAddressError] = useState("")
+    const [personalInfoErrors, setPersonalInfoErrors] = useState<{
+        firstName?: string
+        lastName?: string
+        phoneNumber?: string
+        countryCode?: string
+    }>({})
 
-    const validatePersonalInfo = () => {
-        let isValid = true
+    const [locationErrors, setLocationErrors] = useState<{
+        location?: string
+        address?: string
+    }>({})
 
-        if (!firstName.trim()) {
-            setFirstNameError("First name is required")
-            isValid = false
-        } else {
-            setFirstNameError("")
+    const validatePersonalInfoField = (field: keyof PersonalInfoFormData, value: string) => {
+        try {
+            if (field === "firstName") {
+                z.string().min(1, { message: "First name is required" }).parse(value)
+            } else if (field === "lastName") {
+                z.string().min(1, { message: "Last name is required" }).parse(value)
+            } else if (field === "phoneNumber") {
+                z.string()
+                    .min(10, { message: "Phone number must be at least 10 digits" })
+                    .regex(/^\d+$/, { message: "Phone number must contain only numbers" })
+                    .parse(value)
+            }
+
+            // Clear error if validation passes
+            setPersonalInfoErrors((prev) => ({ ...prev, [field]: undefined }))
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setPersonalInfoErrors((prev) => ({ ...prev, [field]: error.errors[0].message }))
+            }
+            return false
         }
-
-        if (!lastName.trim()) {
-            setLastNameError("Last name is required")
-            isValid = false
-        } else {
-            setLastNameError("")
-        }
-
-        if (!phoneNumber.trim()) {
-            setPhoneNumberError("Phone number is required")
-            isValid = false
-        } else if (!/^\d{10}$/.test(phoneNumber)) {
-            setPhoneNumberError("Please enter a valid 10-digit phone number")
-            isValid = false
-        } else {
-            setPhoneNumberError("")
-        }
-
-        return isValid
     }
 
-    const validateLocation = () => {
-        let isValid = true
+    const validateLocationField = (field: keyof LocationFormData, value: string) => {
+        try {
+            if (field === "address") {
+                z.string().min(1, { message: "Address is required" }).parse(value)
+            }
 
-        if (!address.trim()) {
-            setAddressError("Address is required")
-            isValid = false
-        } else {
-            setAddressError("")
+            // Clear error if validation passes
+            setLocationErrors((prev) => ({ ...prev, [field]: undefined }))
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setLocationErrors((prev) => ({ ...prev, [field]: error.errors[0].message }))
+            }
+            return false
         }
+    }
 
-        return isValid
+    const handlePersonalInfoChange = (field: keyof PersonalInfoFormData, value: string) => {
+        setPersonalInfo((prev) => ({ ...prev, [field]: value }))
+
+        // Clear error when user starts typing
+        if (personalInfoErrors[field]) {
+            setPersonalInfoErrors((prev) => ({ ...prev, [field]: undefined }))
+        }
+    }
+
+    const handleLocationInfoChange = (field: keyof LocationFormData, value: string) => {
+        setLocationInfo((prev) => ({ ...prev, [field]: value }))
+
+        // Clear error when user starts typing
+        if (locationErrors[field]) {
+            setLocationErrors((prev) => ({ ...prev, [field]: undefined }))
+        }
     }
 
     const handleNextStep = () => {
         if (step === 1) {
-            if (validatePersonalInfo()) {
+            try {
+                // Validate the entire form
+                personalInfoSchema.parse(personalInfo)
                 setStep(2)
+            } catch (error) {
+                if (error instanceof z.ZodError) {
+                    // Convert ZodError to a more usable format
+                    const fieldErrors: Record<string, string> = {}
+                    error.errors.forEach((err) => {
+                        if (err.path[0]) {
+                            fieldErrors[err.path[0] as string] = err.message
+                        }
+                    })
+                    setPersonalInfoErrors(fieldErrors)
+                }
             }
         } else if (step === 2) {
-            if (validateLocation()) {
+            try {
+                // Validate the entire form
+                locationSchema.parse(locationInfo)
                 router.push("/onboarding")
+            } catch (error) {
+                if (error instanceof z.ZodError) {
+                    // Convert ZodError to a more usable format
+                    const fieldErrors: Record<string, string> = {}
+                    error.errors.forEach((err) => {
+                        if (err.path[0]) {
+                            fieldErrors[err.path[0] as string] = err.message
+                        }
+                    })
+                    setLocationErrors(fieldErrors)
+                }
             }
         }
     }
@@ -105,30 +163,32 @@ export default function ProfileSetupPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                             <input
                                 type="text"
-                                className={`w-full p-3 border rounded-md ${firstNameError ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full p-3 border rounded-md ${personalInfoErrors.firstName ? "border-red-500" : "border-gray-300"
+                                    }`}
                                 placeholder="Enter First Name"
-                                value={firstName}
-                                onChange={(e) => {
-                                    setFirstName(e.target.value)
-                                    if (firstNameError) setFirstNameError("")
-                                }}
+                                value={personalInfo.firstName}
+                                onChange={(e) => handlePersonalInfoChange("firstName", e.target.value)}
+                                onBlur={() => validatePersonalInfoField("firstName", personalInfo.firstName)}
                             />
-                            {firstNameError && <p className="mt-1 text-sm text-red-500">{firstNameError}</p>}
+                            {personalInfoErrors.firstName && (
+                                <p className="mt-1 text-sm text-red-500">{personalInfoErrors.firstName}</p>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                             <input
                                 type="text"
-                                className={`w-full p-3 border rounded-md ${lastNameError ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full p-3 border rounded-md ${personalInfoErrors.lastName ? "border-red-500" : "border-gray-300"
+                                    }`}
                                 placeholder="Enter Last Name"
-                                value={lastName}
-                                onChange={(e) => {
-                                    setLastName(e.target.value)
-                                    if (lastNameError) setLastNameError("")
-                                }}
+                                value={personalInfo.lastName}
+                                onChange={(e) => handlePersonalInfoChange("lastName", e.target.value)}
+                                onBlur={() => validatePersonalInfoField("lastName", personalInfo.lastName)}
                             />
-                            {lastNameError && <p className="mt-1 text-sm text-red-500">{lastNameError}</p>}
+                            {personalInfoErrors.lastName && (
+                                <p className="mt-1 text-sm text-red-500">{personalInfoErrors.lastName}</p>
+                            )}
                         </div>
 
                         <div>
@@ -137,8 +197,8 @@ export default function ProfileSetupPage() {
                                 <div className="relative">
                                     <select
                                         className="appearance-none h-full py-3 pl-3 pr-8 border border-r-0 border-gray-300 rounded-l-md bg-white"
-                                        value={countryCode}
-                                        onChange={(e) => setCountryCode(e.target.value)}
+                                        value={personalInfo.countryCode}
+                                        onChange={(e) => handlePersonalInfoChange("countryCode", e.target.value)}
                                     >
                                         <option value="+234">+234</option>
                                         <option value="+1">+1</option>
@@ -150,20 +210,22 @@ export default function ProfileSetupPage() {
                                 </div>
                                 <input
                                     type="tel"
-                                    className={`flex-1 p-3 border rounded-r-md ${phoneNumberError ? "border-red-500" : "border-gray-300"
+                                    className={`flex-1 p-3 border rounded-r-md ${personalInfoErrors.phoneNumber ? "border-red-500" : "border-gray-300"
                                         }`}
                                     placeholder="Enter Phone Number"
-                                    value={phoneNumber}
+                                    value={personalInfo.phoneNumber}
                                     onChange={(e) => {
                                         // Only allow numbers
                                         const value = e.target.value.replace(/\D/g, "")
-                                        setPhoneNumber(value)
-                                        if (phoneNumberError) setPhoneNumberError("")
+                                        handlePersonalInfoChange("phoneNumber", value)
                                     }}
+                                    onBlur={() => validatePersonalInfoField("phoneNumber", personalInfo.phoneNumber)}
                                     maxLength={10}
                                 />
                             </div>
-                            {phoneNumberError && <p className="mt-1 text-sm text-red-500">{phoneNumberError}</p>}
+                            {personalInfoErrors.phoneNumber && (
+                                <p className="mt-1 text-sm text-red-500">{personalInfoErrors.phoneNumber}</p>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -175,8 +237,8 @@ export default function ProfileSetupPage() {
                             <div className="relative">
                                 <select
                                     className="w-full p-3 border rounded-md appearance-none bg-white pr-10"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
+                                    value={locationInfo.location}
+                                    onChange={(e) => handleLocationInfoChange("location", e.target.value)}
                                 >
                                     <option value="" disabled>
                                         Select a location
@@ -194,16 +256,14 @@ export default function ProfileSetupPage() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                             <textarea
-                                className={`w-full p-3 border rounded-md min-h-[100px] resize-none ${addressError ? "border-red-500" : "border-gray-300"
+                                className={`w-full p-3 border rounded-md min-h-[100px] resize-none ${locationErrors.address ? "border-red-500" : "border-gray-300"
                                     }`}
                                 placeholder="Enter your home address"
-                                value={address}
-                                onChange={(e) => {
-                                    setAddress(e.target.value)
-                                    if (addressError) setAddressError("")
-                                }}
+                                value={locationInfo.address}
+                                onChange={(e) => handleLocationInfoChange("address", e.target.value)}
+                                onBlur={() => validateLocationField("address", locationInfo.address)}
                             />
-                            {addressError && <p className="mt-1 text-sm text-red-500">{addressError}</p>}
+                            {locationErrors.address && <p className="mt-1 text-sm text-red-500">{locationErrors.address}</p>}
                         </div>
                     </div>
                 )}

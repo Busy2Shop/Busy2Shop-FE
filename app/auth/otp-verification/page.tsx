@@ -7,12 +7,15 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { z } from "zod"
+import { otpSchema } from "@/lib/validations/auth"
 
 export default function OTPVerificationPage() {
     const router = useRouter()
     const [otp, setOtp] = useState(["", "", "", ""])
     const [verificationStatus, setVerificationStatus] = useState<"idle" | "success" | "error">("idle")
     const [timer, setTimer] = useState(60)
+    const [error, setError] = useState<string | null>(null)
     const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null])
 
     useEffect(() => {
@@ -38,6 +41,11 @@ export default function OTPVerificationPage() {
             const newOtp = [...otp]
             newOtp[index] = value
             setOtp(newOtp)
+
+            // Clear error when user starts typing
+            if (error) {
+                setError(null)
+            }
 
             // Move to next input if value is entered
             if (value && index < 3) {
@@ -67,7 +75,10 @@ export default function OTPVerificationPage() {
     const handleVerify = () => {
         const otpValue = otp.join("")
 
-        if (otpValue.length === 4) {
+        try {
+            // Validate OTP
+            otpSchema.parse(otpValue)
+
             // In a real app, you would verify the OTP with your backend
             if (otpValue === "1234") {
                 setVerificationStatus("success")
@@ -76,6 +87,11 @@ export default function OTPVerificationPage() {
                 }, 1500)
             } else {
                 setVerificationStatus("error")
+                setError("Invalid verification code. Please try again.")
+            }
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setError(error.errors[0].message)
             }
         }
     }
@@ -85,6 +101,7 @@ export default function OTPVerificationPage() {
         setTimer(60)
         // Reset the verification status
         setVerificationStatus("idle")
+        setError(null)
     }
 
     return (
@@ -98,10 +115,7 @@ export default function OTPVerificationPage() {
                 </div>
 
                 <h2 className="text-2xl font-bold text-center text-[#00A67E] mb-2">OTP</h2>
-                <p className="text-center text-gray-600 mb-8">
-                    Please enter the verification code sent to {/* In a real app, you would show the masked email/phone */}
-                    your email address.
-                </p>
+                <p className="text-center text-gray-600 mb-8">Please enter the verification code sent to your email address.</p>
 
                 <div className="flex justify-center gap-3 mb-8">
                     {otp.map((digit, index) => (
@@ -149,9 +163,11 @@ export default function OTPVerificationPage() {
                             </svg>
                         </div>
                         <p className="text-red-600 font-medium">Error</p>
-                        <p className="text-gray-500 text-sm">Invalid verification code. Please try again.</p>
+                        <p className="text-gray-500 text-sm">{error}</p>
                     </div>
                 )}
+
+                {error && verificationStatus === "idle" && <p className="text-center text-red-500 mb-4">{error}</p>}
 
                 <Button
                     className="w-full bg-[#00A67E] hover:bg-[#008F6B] mb-4"

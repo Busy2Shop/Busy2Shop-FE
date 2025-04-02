@@ -7,32 +7,67 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
+import { z } from "zod"
+import { forgotPasswordSchema } from "@/lib/validations/auth"
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 
 export default function ForgotPasswordPage() {
-    const [email, setEmail] = useState("")
-    const [emailError, setEmailError] = useState("")
+    const [formData, setFormData] = useState<ForgotPasswordFormData>({
+        email: "",
+    })
+    const [errors, setErrors] = useState<{
+        email?: string
+    }>({})
     const [submitted, setSubmitted] = useState(false)
 
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!email) {
-            setEmailError("Email is required")
-            return false
-        } else if (!emailRegex.test(email)) {
-            setEmailError("Please enter a valid email address")
+    const validateField = (field: keyof ForgotPasswordFormData, value: string) => {
+        try {
+            if (field === "email") {
+                z.string().email({ message: "Please enter a valid email address" }).parse(value)
+            }
+
+            // Clear error if validation passes
+            setErrors((prev) => ({ ...prev, [field]: undefined }))
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }))
+            }
             return false
         }
-        setEmailError("")
-        return true
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleInputChange = (field: keyof ForgotPasswordFormData, value: string) => {
+        setFormData((prev) => ({ ...prev, [field]: value }))
+
+        // Clear error when user starts typing
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: undefined }))
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (validateEmail(email)) {
+        try {
+            // Validate the entire form
+            forgotPasswordSchema.parse(formData)
+
             // In a real app, you would send a password reset email
-            console.log("Reset password for:", email)
+            console.log("Form data is valid:", formData)
             setSubmitted(true)
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                // Convert ZodError to a more usable format
+                const fieldErrors: Record<string, string> = {}
+                error.errors.forEach((err) => {
+                    if (err.path[0]) {
+                        fieldErrors[err.path[0] as string] = err.message
+                    }
+                })
+                setErrors(fieldErrors)
+            }
         }
     }
 
@@ -81,15 +116,12 @@ export default function ForgotPasswordPage() {
                                         <div className="relative">
                                             <input
                                                 type="email"
-                                                className={`w-full p-3 border rounded-md pr-10 ${emailError ? "border-red-500" : "border-gray-300"
+                                                className={`w-full p-3 border rounded-md pr-10 ${errors.email ? "border-red-500" : "border-gray-300"
                                                     }`}
                                                 placeholder="name@gmail.com"
-                                                value={email}
-                                                onChange={(e) => {
-                                                    setEmail(e.target.value)
-                                                    if (emailError) validateEmail(e.target.value)
-                                                }}
-                                                onBlur={() => validateEmail(email)}
+                                                value={formData.email}
+                                                onChange={(e) => handleInputChange("email", e.target.value)}
+                                                onBlur={() => validateField("email", formData.email)}
                                             />
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                                 <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -100,7 +132,7 @@ export default function ForgotPasswordPage() {
                                                 </svg>
                                             </div>
                                         </div>
-                                        {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
+                                        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                                     </div>
                                 </div>
 
@@ -119,7 +151,7 @@ export default function ForgotPasswordPage() {
                                 </svg>
                             </div>
                             <h3 className="text-xl font-medium mb-2">Check your email</h3>
-                            <p className="text-gray-600 mb-8">We've sent a password reset link to {email}</p>
+                            <p className="text-gray-600 mb-8">We've sent a password reset link to {formData.email}</p>
                             <p className="text-sm text-gray-500 mb-4">
                                 Didn't receive the email? Check your spam folder or try again.
                             </p>
