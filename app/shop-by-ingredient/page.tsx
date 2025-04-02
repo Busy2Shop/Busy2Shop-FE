@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Minus, Plus, Trash2, Circle } from "lucide-react"
+import { Minus, Plus, Trash2, Circle, ArrowLeft, ShoppingCart } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Navbar from "@/components/navbar"
+import Link from "next/link"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 interface Ingredient {
     id: string
@@ -13,6 +15,7 @@ interface Ingredient {
     quantity: number
     unit: string
     note?: string
+    description?: string
 }
 
 interface Dish {
@@ -26,6 +29,15 @@ interface Dish {
 export default function ShopByIngredientPage() {
     const [selectedDish, setSelectedDish] = useState("jollof-rice")
     const [newIngredient, setNewIngredient] = useState("")
+    const [ingredients, setIngredients] = useState<Ingredient[]>([
+        { id: "rice", name: "Rice", quantity: 0, unit: "(2 cups)", description: "(2 cups)" },
+        { id: "tomatoes", name: "Tomatoes", quantity: 0, unit: "(5 medium)", description: "(5 medium)" },
+        { id: "pepper", name: "Pepper", quantity: 0, unit: "(as desired)", description: "(as desired)" },
+        { id: "onions", name: "Onions", quantity: 0, unit: "(2 large)", description: "(2 large)" },
+        { id: "oil", name: "Oil", quantity: 0, unit: "(1/2 cup)", description: "(1/2 cup)" },
+        { id: "spices", name: "Spices", quantity: 0, unit: "(to taste)", description: "(to taste)" },
+    ])
+    const isMobile = useMediaQuery("(max-width: 1024px)")
 
     const dishes: Dish[] = [
         {
@@ -33,14 +45,7 @@ export default function ShopByIngredientPage() {
             name: "Jollof Rice",
             image: "/placeholder.svg?height=100&width=100",
             description: "A flavorful West African rice dish cooked in a rich tomato sauce",
-            ingredients: [
-                { id: "rice", name: "Rice", quantity: 0, unit: "(2 cups)" },
-                { id: "tomatoes", name: "Tomatoes", quantity: 0, unit: "(5 medium)" },
-                { id: "pepper", name: "Pepper", quantity: 0, unit: "(as desired)" },
-                { id: "onions", name: "Onions", quantity: 0, unit: "(2 large)" },
-                { id: "oil", name: "Oil", quantity: 0, unit: "(1/2 cup)" },
-                { id: "spices", name: "Spices", quantity: 0, unit: "(to taste)" },
-            ],
+            ingredients: [],
         },
         {
             id: "porridge",
@@ -75,20 +80,176 @@ export default function ShopByIngredientPage() {
     ]
 
     const updateQuantity = (ingredientId: string, newQuantity: number) => {
-        // In a real app, you would update the state
-        console.log(`Update quantity for ingredient ${ingredientId} to ${newQuantity}`)
+        setIngredients(
+            ingredients.map((ingredient) =>
+                ingredient.id === ingredientId ? { ...ingredient, quantity: Math.max(0, newQuantity) } : ingredient,
+            ),
+        )
     }
 
     const addIngredient = () => {
         if (newIngredient.trim()) {
-            // In a real app, you would update the state
-            console.log(`Add new ingredient: ${newIngredient}`)
+            setIngredients([
+                ...ingredients,
+                {
+                    id: `custom-${Date.now()}`,
+                    name: newIngredient.trim(),
+                    quantity: 0,
+                    unit: "",
+                },
+            ])
             setNewIngredient("")
         }
     }
 
-    const selectedDishData = dishes.find((dish) => dish.id === selectedDish) || dishes[0]
+    const removeIngredient = (ingredientId: string) => {
+        setIngredients(ingredients.filter((ingredient) => ingredient.id !== ingredientId))
+    }
 
+    const selectedDishData = dishes.find((dish) => dish.id === selectedDish) || dishes[0]
+    const cartCount = ingredients.filter((i) => i.quantity > 0).length
+
+    // Mobile view
+    if (isMobile) {
+        return (
+            <div className="flex flex-col min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="sticky top-0 z-10 bg-white p-4 border-b">
+                    <div className="flex items-center">
+                        <Link href="/" className="flex items-center text-gray-800">
+                            <ArrowLeft className="h-5 w-5 mr-2" />
+                            <span className="font-medium">Shop by Ingredients</span>
+                        </Link>
+                    </div>
+                    <p className="text-[#00A67E] text-sm mt-1">You're shopping from (Ajah Market)</p>
+                </div>
+
+                <div className="p-4">
+                    <p className="mb-4">Select a dish to view all required ingredients</p>
+
+                    {/* Dish Selection */}
+                    <div className="flex overflow-x-auto space-x-4 pb-4 mb-6">
+                        {dishes.map((dish) => (
+                            <div
+                                key={dish.id}
+                                className={`flex flex-col items-center cursor-pointer min-w-[80px] ${selectedDish === dish.id ? "opacity-100" : "opacity-70"
+                                    }`}
+                                onClick={() => setSelectedDish(dish.id)}
+                            >
+                                <div className="rounded-full overflow-hidden mb-2 border h-[80px] w-[80px]">
+                                    <Image
+                                        src={dish.image || "/placeholder.svg"}
+                                        alt={dish.name}
+                                        width={80}
+                                        height={80}
+                                        className="object-cover"
+                                    />
+                                </div>
+                                <span className="text-center text-sm">{dish.name}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Jollof Rice Title */}
+                    <div className="mb-4">
+                        <h2 className="text-xl font-bold">Jollof Rice</h2>
+                        <p className="text-gray-600 text-sm">A flavorful West African rice dish cooked in a rich tomato sauce</p>
+                    </div>
+
+                    {/* Ingredients List */}
+                    <div className="space-y-3 mb-24">
+                        {ingredients.map((ingredient) => (
+                            <div key={ingredient.id} className="bg-white border rounded-md p-3">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center">
+                                        <Circle className="h-2 w-2 mr-2 fill-current text-gray-600" />
+                                        <div>
+                                            <span className="font-medium">{ingredient.name}</span>
+                                            {ingredient.description && (
+                                                <span className="text-gray-500 text-sm ml-1">{ingredient.description}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-7 w-7 rounded-md border-[#00A67E] text-[#00A67E]"
+                                            onClick={() => updateQuantity(ingredient.id, ingredient.quantity - 1)}
+                                        >
+                                            <Minus className="h-3 w-3" />
+                                        </Button>
+                                        <span className="w-6 text-center">{ingredient.quantity}</span>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-7 w-7 rounded-md border-[#00A67E] text-[#00A67E]"
+                                            onClick={() => updateQuantity(ingredient.id, ingredient.quantity + 1)}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-red-500"
+                                            onClick={() => removeIngredient(ingredient.id)}
+                                        >
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Add Item Input */}
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+                    <div className="flex items-center">
+                        <div className="flex-1 border rounded-l-md">
+                            <Input
+                                placeholder="Add new item..."
+                                className="border-none shadow-none focus-visible:ring-0"
+                                value={newIngredient}
+                                onChange={(e) => setNewIngredient(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && addIngredient()}
+                            />
+                        </div>
+                        <Button className="rounded-l-none bg-gray-800 hover:bg-gray-700" onClick={addIngredient}>
+                            Add
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Add All to Cart Button */}
+                <div className="fixed bottom-20 left-0 right-0 px-4">
+                    <Button
+                        className="w-full bg-[#00A67E] hover:bg-[#008F6B] py-3"
+                        onClick={() => console.log("Add all ingredients to cart")}
+                    >
+                        Add All Ingredients to Cart
+                    </Button>
+                </div>
+
+                {/* Floating Cart Button */}
+                {cartCount > 0 && (
+                    <div className="fixed bottom-32 right-4">
+                        <Link href="/checkout">
+                            <Button className="h-14 w-14 rounded-full bg-[#00A67E] hover:bg-[#008F6B] shadow-lg relative">
+                                <ShoppingCart className="h-6 w-6 text-white" />
+                                <span className="absolute -top-1 -right-1 bg-[#FF6B00] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            </Button>
+                        </Link>
+                        <div className="text-center text-xs mt-1 text-gray-600">My Cart</div>
+                    </div>
+                )}
+            </div>
+        )
+    }
+
+    // Desktop view (original layout)
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
@@ -171,7 +332,7 @@ export default function ShopByIngredientPage() {
                         <h3 className="font-semibold mb-3">Ingredients</h3>
 
                         <div className="space-y-2 mb-6">
-                            {selectedDishData.ingredients.map((ingredient) => (
+                            {ingredients.map((ingredient) => (
                                 <div key={ingredient.id} className="flex items-center justify-between bg-gray-100 rounded-md p-2">
                                     <div className="flex items-center">
                                         <Circle className="h-2 w-2 mr-2 fill-current text-gray-600" />
@@ -197,7 +358,12 @@ export default function ShopByIngredientPage() {
                                         >
                                             <Plus className="h-3 w-3" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-red-500"
+                                            onClick={() => removeIngredient(ingredient.id)}
+                                        >
                                             <Trash2 className="h-3 w-3" />
                                         </Button>
                                     </div>
