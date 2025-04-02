@@ -6,16 +6,34 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import { ArrowLeft } from "lucide-react"
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("")
+    const [emailError, setEmailError] = useState("")
     const [submitted, setSubmitted] = useState(false)
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!email) {
+            setEmailError("Email is required")
+            return false
+        } else if (!emailRegex.test(email)) {
+            setEmailError("Please enter a valid email address")
+            return false
+        }
+        setEmailError("")
+        return true
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        // In a real app, you would send a password reset email
-        console.log("Reset password for:", email)
-        setSubmitted(true)
+
+        if (validateEmail(email)) {
+            // In a real app, you would send a password reset email
+            console.log("Reset password for:", email)
+            setSubmitted(true)
+        }
     }
 
     return (
@@ -41,6 +59,13 @@ export default function ForgotPasswordPage() {
             {/* Right side - Form */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
+                    <div className="mb-6">
+                        <Link href="/auth/login" className="flex items-center text-gray-600">
+                            <ArrowLeft className="h-5 w-5 mr-1" />
+                            <span>Back</span>
+                        </Link>
+                    </div>
+
                     <h2 className="text-2xl font-bold text-center text-[#00A67E] mb-2">Forgot Password</h2>
 
                     {!submitted ? (
@@ -56,11 +81,15 @@ export default function ForgotPasswordPage() {
                                         <div className="relative">
                                             <input
                                                 type="email"
-                                                className="w-full p-3 border rounded-md pr-10"
+                                                className={`w-full p-3 border rounded-md pr-10 ${emailError ? "border-red-500" : "border-gray-300"
+                                                    }`}
                                                 placeholder="name@gmail.com"
                                                 value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
+                                                onChange={(e) => {
+                                                    setEmail(e.target.value)
+                                                    if (emailError) validateEmail(e.target.value)
+                                                }}
+                                                onBlur={() => validateEmail(email)}
                                             />
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                                 <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,6 +100,7 @@ export default function ForgotPasswordPage() {
                                                 </svg>
                                             </div>
                                         </div>
+                                        {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
                                     </div>
                                 </div>
 

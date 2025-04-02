@@ -3,12 +3,14 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Eye, EyeOff, User, Users } from "lucide-react"
+import { Eye, EyeOff, User, Users, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export default function SignUpPage() {
+    const router = useRouter()
     const [step, setStep] = useState(1)
     const [role, setRole] = useState<"individual" | "agent" | null>(null)
     const [email, setEmail] = useState("")
@@ -16,6 +18,48 @@ export default function SignUpPage() {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+    // Validation states
+    const [emailError, setEmailError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
+    const [confirmPasswordError, setConfirmPasswordError] = useState("")
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!email) {
+            setEmailError("Email is required")
+            return false
+        } else if (!emailRegex.test(email)) {
+            setEmailError("Please enter a valid email address")
+            return false
+        }
+        setEmailError("")
+        return true
+    }
+
+    const validatePassword = (password: string) => {
+        if (!password) {
+            setPasswordError("Password is required")
+            return false
+        } else if (password.length < 8) {
+            setPasswordError("Password must be at least 8 characters")
+            return false
+        }
+        setPasswordError("")
+        return true
+    }
+
+    const validateConfirmPassword = (confirmPassword: string) => {
+        if (!confirmPassword) {
+            setConfirmPasswordError("Please confirm your password")
+            return false
+        } else if (confirmPassword !== password) {
+            setConfirmPasswordError("Passwords do not match")
+            return false
+        }
+        setConfirmPasswordError("")
+        return true
+    }
 
     const handleContinue = () => {
         if (step === 1 && role) {
@@ -25,8 +69,15 @@ export default function SignUpPage() {
 
     const handleSignUp = (e: React.FormEvent) => {
         e.preventDefault()
-        // In a real app, you would validate and submit the form
-        console.log("Sign up with:", { role, email, password })
+
+        const isEmailValid = validateEmail(email)
+        const isPasswordValid = validatePassword(password)
+        const isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
+
+        if (isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+            // In a real app, you would submit the form and create the account
+            router.push("/auth/otp-verification")
+        }
     }
 
     return (
@@ -99,6 +150,13 @@ export default function SignUpPage() {
                         </>
                     ) : (
                         <>
+                            <div className="mb-6">
+                                <button onClick={() => setStep(1)} className="flex items-center text-gray-600">
+                                    <ArrowLeft className="h-5 w-5 mr-1" />
+                                    <span>Back</span>
+                                </button>
+                            </div>
+
                             <h2 className="text-2xl font-bold text-center text-[#00A67E] mb-8">Sign up</h2>
 
                             <form onSubmit={handleSignUp}>
@@ -108,11 +166,15 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type="email"
-                                                className="w-full p-3 border rounded-md pr-10"
+                                                className={`w-full p-3 border rounded-md pr-10 ${emailError ? "border-red-500" : "border-gray-300"
+                                                    }`}
                                                 placeholder="name@gmail.com"
                                                 value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
+                                                onChange={(e) => {
+                                                    setEmail(e.target.value)
+                                                    if (emailError) validateEmail(e.target.value)
+                                                }}
+                                                onBlur={() => validateEmail(email)}
                                             />
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                                 <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -123,6 +185,7 @@ export default function SignUpPage() {
                                                 </svg>
                                             </div>
                                         </div>
+                                        {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
                                     </div>
 
                                     <div>
@@ -130,11 +193,15 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type={showPassword ? "text" : "password"}
-                                                className="w-full p-3 border rounded-md pr-10"
+                                                className={`w-full p-3 border rounded-md pr-10 ${passwordError ? "border-red-500" : "border-gray-300"
+                                                    }`}
                                                 placeholder="••••••••••"
                                                 value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
+                                                onChange={(e) => {
+                                                    setPassword(e.target.value)
+                                                    if (passwordError) validatePassword(e.target.value)
+                                                }}
+                                                onBlur={() => validatePassword(password)}
                                             />
                                             <button
                                                 type="button"
@@ -144,6 +211,7 @@ export default function SignUpPage() {
                                                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
+                                        {passwordError && <p className="mt-1 text-sm text-red-500">{passwordError}</p>}
                                     </div>
 
                                     <div>
@@ -151,11 +219,15 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type={showConfirmPassword ? "text" : "password"}
-                                                className="w-full p-3 border rounded-md pr-10"
+                                                className={`w-full p-3 border rounded-md pr-10 ${confirmPasswordError ? "border-red-500" : "border-gray-300"
+                                                    }`}
                                                 placeholder="••••••••••"
                                                 value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                required
+                                                onChange={(e) => {
+                                                    setConfirmPassword(e.target.value)
+                                                    if (confirmPasswordError) validateConfirmPassword(e.target.value)
+                                                }}
+                                                onBlur={() => validateConfirmPassword(confirmPassword)}
                                             />
                                             <button
                                                 type="button"
@@ -165,6 +237,7 @@ export default function SignUpPage() {
                                                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
+                                        {confirmPasswordError && <p className="mt-1 text-sm text-red-500">{confirmPasswordError}</p>}
                                     </div>
                                 </div>
 
@@ -178,7 +251,7 @@ export default function SignUpPage() {
                             <div className="mt-4 text-center">
                                 <p className="text-sm text-gray-600">
                                     Already have an account?{" "}
-                                    <Link href="/login" className="text-[#FF6B00] font-medium">
+                                    <Link href="/auth/login" className="text-[#FF6B00] font-medium">
                                         Login
                                     </Link>
                                 </p>

@@ -3,20 +3,54 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+    const router = useRouter()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
 
+    // Validation states
+    const [emailError, setEmailError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!email) {
+            setEmailError("Email is required")
+            return false
+        } else if (!emailRegex.test(email)) {
+            setEmailError("Please enter a valid email address")
+            return false
+        }
+        setEmailError("")
+        return true
+    }
+
+    const validatePassword = (password: string) => {
+        if (!password) {
+            setPasswordError("Password is required")
+            return false
+        }
+        setPasswordError("")
+        return true
+    }
+
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault()
-        // In a real app, you would validate and submit the form
-        console.log("Login with:", { email, password })
+
+        const isEmailValid = validateEmail(email)
+        const isPasswordValid = validatePassword(password)
+
+        if (isEmailValid && isPasswordValid) {
+            // In a real app, you would validate credentials and log in the user
+            router.push("/")
+        }
     }
 
     return (
@@ -42,6 +76,13 @@ export default function LoginPage() {
             {/* Right side - Form */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
+                    <div className="mb-6">
+                        <Link href="/" className="flex items-center text-gray-600">
+                            <ArrowLeft className="h-5 w-5 mr-1" />
+                            <span>Back</span>
+                        </Link>
+                    </div>
+
                     <h2 className="text-2xl font-bold text-center text-[#00A67E] mb-8">Login</h2>
 
                     <form onSubmit={handleLogin}>
@@ -51,11 +92,15 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <input
                                         type="email"
-                                        className="w-full p-3 border rounded-md pr-10"
+                                        className={`w-full p-3 border rounded-md pr-10 ${emailError ? "border-red-500" : "border-gray-300"
+                                            }`}
                                         placeholder="name@gmail.com"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
+                                        onChange={(e) => {
+                                            setEmail(e.target.value)
+                                            if (emailError) validateEmail(e.target.value)
+                                        }}
+                                        onBlur={() => validateEmail(email)}
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                         <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -66,6 +111,7 @@ export default function LoginPage() {
                                         </svg>
                                     </div>
                                 </div>
+                                {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
                             </div>
 
                             <div>
@@ -73,11 +119,15 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
-                                        className="w-full p-3 border rounded-md pr-10"
+                                        className={`w-full p-3 border rounded-md pr-10 ${passwordError ? "border-red-500" : "border-gray-300"
+                                            }`}
                                         placeholder="••••••••••"
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
+                                        onChange={(e) => {
+                                            setPassword(e.target.value)
+                                            if (passwordError) validatePassword(e.target.value)
+                                        }}
+                                        onBlur={() => validatePassword(password)}
                                     />
                                     <button
                                         type="button"
@@ -87,6 +137,7 @@ export default function LoginPage() {
                                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
+                                {passwordError && <p className="mt-1 text-sm text-red-500">{passwordError}</p>}
                             </div>
 
                             <div className="flex justify-end">
@@ -106,7 +157,7 @@ export default function LoginPage() {
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-600">
                             Don't have an account?{" "}
-                            <Link href="/signup" className="text-[#00A67E] font-medium">
+                            <Link href="/auth/signup" className="text-[#00A67E] font-medium">
                                 Sign Up
                             </Link>
                         </p>
