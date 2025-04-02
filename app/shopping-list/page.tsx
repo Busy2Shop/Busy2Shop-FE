@@ -221,15 +221,16 @@ export default function ShoppingListPage() {
         {/* Floating Cart Button */}
         {items.length > 0 && (
           <div className="fixed bottom-20 right-4">
-            <Button
-              className="h-14 w-14 rounded-full bg-[#00A67E] hover:bg-[#008F6B] shadow-lg relative"
-              onClick={() => setShowCheckoutModal(true)}
-            >
-              <ShoppingCart className="h-6 w-6 text-white" />
-              <span className="absolute -top-1 -right-1 bg-[#FF6B00] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {cartCount}
-              </span>
-            </Button>
+            <Link href="/checkout">
+              <Button
+                className="h-14 w-14 rounded-full bg-[#00A67E] hover:bg-[#008F6B] shadow-lg relative"
+              >
+                <ShoppingCart className="h-6 w-6 text-white" />
+                <span className="absolute -top-1 -right-1 bg-[#FF6B00] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              </Button>
+            </Link>
             <div className="text-center text-xs mt-1 text-gray-600">My Cart</div>
           </div>
         )}
