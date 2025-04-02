@@ -8,57 +8,67 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { z } from "zod"
+import { signUpSchema } from "@/lib/validations/auth"
+import { passwordSchema } from "@/lib/validations/auth" // Import the password schema directly
+
+type SignUpFormData = z.infer<typeof signUpSchema>
 
 export default function SignUpPage() {
     const router = useRouter()
     const [step, setStep] = useState(1)
     const [role, setRole] = useState<"individual" | "agent" | null>(null)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
+
+    // Form data
+    const [formData, setFormData] = useState<SignUpFormData>({
+        email: "",
+        password: "",
+        confirmPassword: "",
+    })
+
+    // UI states
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
     // Validation states
-    const [emailError, setEmailError] = useState("")
-    const [passwordError, setPasswordError] = useState("")
-    const [confirmPasswordError, setConfirmPasswordError] = useState("")
+    const [errors, setErrors] = useState<{
+        email?: string
+        password?: string
+        confirmPassword?: string
+    }>({})
 
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!email) {
-            setEmailError("Email is required")
-            return false
-        } else if (!emailRegex.test(email)) {
-            setEmailError("Please enter a valid email address")
+    const validateField = (field: keyof SignUpFormData, value: string) => {
+        try {
+            if (field === "email") {
+                z.string().email({ message: "Please enter a valid email address" }).parse(value)
+            } else if (field === "password") {
+                passwordSchema.parse(value) // Use the imported passwordSchema directly
+            } else if (field === "confirmPassword") {
+                if (value !== formData.password) {
+                    throw new Error("Passwords do not match")
+                }
+            }
+
+            // Clear error if validation passes
+            setErrors((prev) => ({ ...prev, [field]: undefined }))
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }))
+            } else if (error instanceof Error) {
+                setErrors((prev) => ({ ...prev, [field]: error.message }))
+            }
             return false
         }
-        setEmailError("")
-        return true
     }
 
-    const validatePassword = (password: string) => {
-        if (!password) {
-            setPasswordError("Password is required")
-            return false
-        } else if (password.length < 8) {
-            setPasswordError("Password must be at least 8 characters")
-            return false
-        }
-        setPasswordError("")
-        return true
-    }
+    const handleInputChange = (field: keyof SignUpFormData, value: string) => {
+        setFormData((prev) => ({ ...prev, [field]: value }))
 
-    const validateConfirmPassword = (confirmPassword: string) => {
-        if (!confirmPassword) {
-            setConfirmPasswordError("Please confirm your password")
-            return false
-        } else if (confirmPassword !== password) {
-            setConfirmPasswordError("Passwords do not match")
-            return false
+        // Clear error when user starts typing
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: undefined }))
         }
-        setConfirmPasswordError("")
-        return true
     }
 
     const handleContinue = () => {
@@ -67,16 +77,27 @@ export default function SignUpPage() {
         }
     }
 
-    const handleSignUp = (e: React.FormEvent) => {
+    const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        const isEmailValid = validateEmail(email)
-        const isPasswordValid = validatePassword(password)
-        const isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
+        try {
+            // Validate the entire form
+            signUpSchema.parse(formData)
 
-        if (isEmailValid && isPasswordValid && isConfirmPasswordValid) {
             // In a real app, you would submit the form and create the account
+            console.log("Form data is valid:", formData)
             router.push("/auth/otp-verification")
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                // Convert ZodError to a more usable format
+                const fieldErrors: Record<string, string> = {}
+                error.errors.forEach((err) => {
+                    if (err.path[0]) {
+                        fieldErrors[err.path[0] as string] = err.message
+                    }
+                })
+                setErrors(fieldErrors)
+            }
         }
     }
 
@@ -166,15 +187,12 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type="email"
-                                                className={`w-full p-3 border rounded-md pr-10 ${emailError ? "border-red-500" : "border-gray-300"
+                                                className={`w-full p-3 border rounded-md pr-10 ${errors.email ? "border-red-500" : "border-gray-300"
                                                     }`}
                                                 placeholder="name@gmail.com"
-                                                value={email}
-                                                onChange={(e) => {
-                                                    setEmail(e.target.value)
-                                                    if (emailError) validateEmail(e.target.value)
-                                                }}
-                                                onBlur={() => validateEmail(email)}
+                                                value={formData.email}
+                                                onChange={(e) => handleInputChange("email", e.target.value)}
+                                                onBlur={() => validateField("email", formData.email)}
                                             />
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                                 <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -185,7 +203,7 @@ export default function SignUpPage() {
                                                 </svg>
                                             </div>
                                         </div>
-                                        {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
+                                        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                                     </div>
 
                                     <div>
@@ -193,15 +211,12 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type={showPassword ? "text" : "password"}
-                                                className={`w-full p-3 border rounded-md pr-10 ${passwordError ? "border-red-500" : "border-gray-300"
+                                                className={`w-full p-3 border rounded-md pr-10 ${errors.password ? "border-red-500" : "border-gray-300"
                                                     }`}
                                                 placeholder="••••••••••"
-                                                value={password}
-                                                onChange={(e) => {
-                                                    setPassword(e.target.value)
-                                                    if (passwordError) validatePassword(e.target.value)
-                                                }}
-                                                onBlur={() => validatePassword(password)}
+                                                value={formData.password}
+                                                onChange={(e) => handleInputChange("password", e.target.value)}
+                                                onBlur={() => validateField("password", formData.password)}
                                             />
                                             <button
                                                 type="button"
@@ -211,7 +226,7 @@ export default function SignUpPage() {
                                                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        {passwordError && <p className="mt-1 text-sm text-red-500">{passwordError}</p>}
+                                        {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
                                     </div>
 
                                     <div>
@@ -219,15 +234,12 @@ export default function SignUpPage() {
                                         <div className="relative">
                                             <input
                                                 type={showConfirmPassword ? "text" : "password"}
-                                                className={`w-full p-3 border rounded-md pr-10 ${confirmPasswordError ? "border-red-500" : "border-gray-300"
+                                                className={`w-full p-3 border rounded-md pr-10 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
                                                     }`}
                                                 placeholder="••••••••••"
-                                                value={confirmPassword}
-                                                onChange={(e) => {
-                                                    setConfirmPassword(e.target.value)
-                                                    if (confirmPasswordError) validateConfirmPassword(e.target.value)
-                                                }}
-                                                onBlur={() => validateConfirmPassword(confirmPassword)}
+                                                value={formData.confirmPassword}
+                                                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                                                onBlur={() => validateField("confirmPassword", formData.confirmPassword)}
                                             />
                                             <button
                                                 type="button"
@@ -237,7 +249,7 @@ export default function SignUpPage() {
                                                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        {confirmPasswordError && <p className="mt-1 text-sm text-red-500">{confirmPasswordError}</p>}
+                                        {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
                                     </div>
                                 </div>
 
@@ -308,4 +320,3 @@ export default function SignUpPage() {
         </div>
     )
 }
-
