@@ -90,7 +90,7 @@ export default function LoginForm() {
 
                 <div className="text-center text-sm">
                     Don&apos;t have an account?{" "}
-                    <Link href="/signup" className="font-medium text-orange-500 hover:text-orange-600">
+                    <Link href="/admin/auth/signup" className="font-medium text-orange-500 hover:text-orange-600">
                         Sign Up
                     </Link>
                 </div>
