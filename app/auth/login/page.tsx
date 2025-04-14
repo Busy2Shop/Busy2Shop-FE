@@ -1,20 +1,23 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { z } from "zod"
 import { loginSchema } from "@/lib/validations/auth"
+import { useLogin } from "@/hooks/use-auth"
+import { toast } from "react-toastify"
 
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const login = useLogin()
 
     // Form data
     const [formData, setFormData] = useState<LoginFormData>({
@@ -24,6 +27,7 @@ export default function LoginPage() {
 
     // UI states
     const [showPassword, setShowPassword] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     // Validation states
     const [errors, setErrors] = useState<{
@@ -61,14 +65,24 @@ export default function LoginPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
+        setIsLoading(true)
 
         try {
             // Validate the entire form
             loginSchema.parse(formData)
 
-            // In a real app, you would validate credentials and log in the user
-            console.log("Form data is valid:", formData)
-            router.push("/")
+            // Call the login mutation
+            await login.mutateAsync({
+                email: formData.email,
+                password: formData.password,
+            })
+
+            // Show success message
+            toast.success("Login successful!")
+
+            // Redirect to the intended page or dashboard
+            const redirectTo = searchParams.get('redirect') || '/'
+            router.push(redirectTo)
         } catch (error) {
             if (error instanceof z.ZodError) {
                 // Convert ZodError to a more usable format
@@ -79,7 +93,12 @@ export default function LoginPage() {
                     }
                 })
                 setErrors(fieldErrors)
+            } else {
+                // Handle API errors
+                toast.error("Invalid email or password")
             }
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -128,6 +147,7 @@ export default function LoginPage() {
                                         value={formData.email}
                                         onChange={(e) => handleInputChange("email", e.target.value)}
                                         onBlur={() => validateField("email", formData.email)}
+                                        disabled={isLoading}
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                                         <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,6 +172,7 @@ export default function LoginPage() {
                                         value={formData.password}
                                         onChange={(e) => handleInputChange("password", e.target.value)}
                                         onBlur={() => validateField("password", formData.password)}
+                                        disabled={isLoading}
                                     />
                                     <button
                                         type="button"
@@ -172,8 +193,12 @@ export default function LoginPage() {
                         </div>
 
                         <div className="mt-8">
-                            <Button type="submit" className="w-full bg-[#00A67E] hover:bg-[#008F6B]">
-                                Login
+                            <Button 
+                                type="submit" 
+                                className="w-full bg-[#00A67E] hover:bg-[#008F6B]"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Logging in..." : "Login"}
                             </Button>
                         </div>
                     </form>
@@ -201,6 +226,7 @@ export default function LoginPage() {
                             <button
                                 type="button"
                                 className="w-full flex items-center justify-center p-3 border rounded-md hover:bg-gray-50"
+                                disabled={isLoading}
                             >
                                 <svg
                                     width="24"
