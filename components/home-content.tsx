@@ -1,7 +1,8 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Plus, Twitter, Facebook, Instagram } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -46,10 +47,10 @@ export default function HomeContent() {
                         <p className="text-gray-600">Welcome back to waka2shop</p>
                     </div>
                 </div>
-                <Button className="bg-[#00A67E] hover:bg-[#008F6B] text-white">
+                <Link href={"/shopping-list"} className={cn(buttonVariants({ variant: "default" }), "flex items-center bg-[#00A67E] hover:bg-[#008F6B] text-white")}>
                     <Plus className="h-5 w-5 mr-2" />
                     Create Shopping List
-                </Button>
+                </Link>
             </div>
 
             {/* Shop by Ingredients Section */}
