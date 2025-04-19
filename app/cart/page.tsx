@@ -1,9 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { ChevronLeft, Minus, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Navbar from "@/components/navbar"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 interface CartItem {
     id: string
@@ -20,6 +28,7 @@ interface CartGroup {
 
 export default function CartPage() {
     const [selectedGroup, setSelectedGroup] = useState("1")
+    const [itemToRemove, setItemToRemove] = useState<{ groupId: string; itemId: string } | null>(null)
 
     const cartGroups: CartGroup[] = [
         {
@@ -66,8 +75,15 @@ export default function CartPage() {
     }
 
     const removeItem = (groupId: string, itemId: string) => {
-        // In a real app, you would update the state
-        console.log(`Remove item ${itemId} from group ${groupId}`)
+        setItemToRemove({ groupId, itemId })
+    }
+
+    const confirmRemoveItem = () => {
+        if (itemToRemove) {
+            // In a real app, you would update the state
+            console.log(`Remove item ${itemToRemove.itemId} from group ${itemToRemove.groupId}`)
+            setItemToRemove(null)
+        }
     }
 
     const calculateGroupTotal = (group: CartGroup) => {
@@ -89,7 +105,10 @@ export default function CartPage() {
             <div className="flex-1 max-w-[1440px] mx-auto w-full p-4 md:p-6">
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+                        <div className="flex items-center gap-2 mb-6">
+                            <ChevronLeft onClick={() => window.history.back()} className="h-8 w-8 cursor-pointer" />
+                            <h1 className="text-3xl font-bold">Your Cart</h1>
+                        </div>
 
                         {/* Cart Groups */}
                         {cartGroups.map((group) => (
@@ -203,6 +222,26 @@ export default function CartPage() {
                         <Button className="w-full bg-[#00A67E] hover:bg-[#008F6B]">Proceed to Checkout</Button>
                     </div>
                 </div>
+
+                {/* Confirmation Dialog */}
+                <Dialog open={!!itemToRemove} onOpenChange={() => setItemToRemove(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Remove Item</DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to remove this item from your cart?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setItemToRemove(null)}>
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" onClick={confirmRemoveItem}>
+                                Remove
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     )

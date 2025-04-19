@@ -63,7 +63,10 @@ export default function ShoppingListPage() {
       <div className="flex-1 max-w-[1440px] mx-auto w-full p-4 md:p-6">
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-1">Shopping List</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <ChevronLeft onClick={() => window.history.back()} className="h-8 w-8 cursor-pointer" />
+              <h1 className="text-3xl font-bold">Shopping List</h1>
+            </div>
             <p className="text-[#00A67E] mb-6">Your're shopping from (Ajah Market)</p>
 
             {items.length > 0 ? (
