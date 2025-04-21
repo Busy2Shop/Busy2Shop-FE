@@ -1,55 +1,65 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from './lib/auth';
 
-// List of public routes that don't require authentication
-const publicRoutes = [
-    '/',
-    '/auth/login',
-    '/auth/signup',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-    '/auth/verify-email',
+// Add paths that don't require authentication
+const publicPaths = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
     '/markets',
     '/shop-by-ingredient',
+    '/',
 ];
 
 // List of protected routes that require authentication
 const protectedRoutes = [
     '/checkout',
     '/orders',
-    '/profile',
+    '/cart/checkout',
+    '/cart/place-order',
+    '/orders/create',
+    '/orders/update',
+    '/orders/cancel',
+    '/orders/chat',
     '/wallet',
-    '/cart',
+    '/profile',
     '/address',
     '/messages',
-    '/shopping-list',
+];
+
+// List of routes that should redirect authenticated users
+const redirectIfAuthenticated = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
 ];
 
 export function middleware(request: NextRequest) {
-    const token = request.cookies.get('token')?.value;
     const { pathname } = request.nextUrl;
+    const token = getToken();
 
-    // Check if the route is public
-    const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+    // Check if the path requires authentication
+    const requiresAuth = protectedRoutes.some((path) => pathname.startsWith(path));
 
-    // Check if the route is protected
-    const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+    // Check if the path should redirect authenticated users
+    const shouldRedirectIfAuth = redirectIfAuthenticated.some((path) => pathname.startsWith(path));
 
-    // If the route is public, allow access
-    if (isPublicRoute) {
-        return NextResponse.next();
+    // Redirect authenticated users away from auth pages
+    if (shouldRedirectIfAuth && token) {
+        return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // If there's no token and the route is protected, redirect to login
-    if (!token && isProtectedRoute) {
-        const loginUrl = new URL('/auth/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
-    }
-
-    // If there's a token and the user is trying to access auth pages, redirect to dashboard
-    if (token && pathname.startsWith('/auth/')) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+    // Protect routes that require authentication
+    if (requiresAuth && !token) {
+        // Store the intended URL to redirect back after login
+        const redirectUrl = new URL('/login', request.url);
+        redirectUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(redirectUrl);
     }
 
     return NextResponse.next();
@@ -63,7 +73,8 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
+         * - public folder
          */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
     ],
 }; 
