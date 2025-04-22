@@ -49,20 +49,13 @@ export default function OTPVerificationPage() {
         } catch (error) {
             if (error instanceof z.ZodError) {
                 setErrors({ otp: error.errors[0].message });
-            } else {
-                // Handle API errors
-                toast.error(error?.response?.data?.message || 'Verification failed. Please try again.');
+            } 
         }
-    }
     };
 
     const handleResendOTP = async () => {
-        try {
-            await resendVerificationEmail();
-            toast.success('Verification code resent successfully!');
-        } catch (error) {
-            toast.error(error?.response?.data?.message || 'Failed to resend verification code.');
-        }
+        await resendVerificationEmail();
+        toast.success('Verification code resent successfully!');
     };
 
     return (

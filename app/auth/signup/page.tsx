@@ -69,13 +69,7 @@ export default function SignUpPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
     // Validation states
-    const [errors, setErrors] = useState<{
-        email?: string
-        password?: string
-        confirmPassword?: string
-        firstName?: string
-        lastName?: string
-    }>({})
+    const [errors, setErrors] = useState<Partial<Record<keyof SignUpFormData, string>>>({})
 
     const validateField = (field: keyof SignUpFormData, value: string) => {
         try {
@@ -146,9 +140,6 @@ export default function SignUpPage() {
                     }
                 })
                 setErrors(fieldErrors)
-            } else {
-                // Handle API errors
-                toast.error(error?.response?.data?.message || "Registration failed. Please try again.")
             }
         }
     }
