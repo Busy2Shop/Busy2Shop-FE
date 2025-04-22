@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ const otpSchema = z.object({
     otp: z.string().length(6, { message: 'OTP must be 6 digits' }),
 });
 
-export default function OTPVerificationPage() {
+function OTPVerificationForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { verifyEmail, resendVerificationEmail, isLoading, error, clearError } = useAuthStore();
@@ -110,5 +110,13 @@ export default function OTPVerificationPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function OTPVerificationPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <OTPVerificationForm />
+        </Suspense>
     );
 }

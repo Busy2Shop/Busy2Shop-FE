@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/authStore"
 import { z } from "zod"
@@ -20,7 +20,7 @@ const loginSchema = z.object({
     password: z.string().min(1, { message: "Password is required" }),
 })
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { login, googleLogin, isLoading, error, clearError } = useAuthStore()
@@ -250,15 +250,23 @@ export default function LoginPage() {
                         <div className="mt-8 text-center">
                             <p className="text-sm text-gray-600">
                                 Don't have an account?{" "}
-                                <Link href="/auth/signup" className="font-medium text-[#00A67E] hover:text-[#008F6B]">
+                                <Link href="/auth/register" className="font-medium text-[#00A67E] hover:text-[#008F6B]">
                                     Sign up
                                 </Link>
                             </p>
-                    </div>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-    )
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginForm />
+        </Suspense>
+    );
 }
 
