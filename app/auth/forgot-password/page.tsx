@@ -46,9 +46,6 @@ export default function ForgotPasswordPage() {
         } catch (error) {
             if (error instanceof z.ZodError) {
                 setErrors({ email: error.errors[0].message });
-            } else {
-                // Handle API errors
-                toast.error(error?.response?.data?.message || 'Failed to send reset instructions.');
             }
         }
     };
