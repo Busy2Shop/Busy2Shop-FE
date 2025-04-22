@@ -1,19 +1,21 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
-import useAuthStore from '@/store/auth.store';
+import apiClient from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import type { AuthState } from '@/store/authStore';
+import type { LoginCredentials, ResetPasswordData } from '@/lib/services/auth.service';
 
 export function useLogin() {
-    const login = useAuthStore((state) => state.login);
+    const login = useAuthStore((state: AuthState) => state.login);
 
     return useMutation({
         mutationFn: async (credentials: { email: string; password: string }) => {
-            return login(credentials.email, credentials.password);
+            return login({ email: credentials.email, password: credentials.password });
         },
     });
 }
 
 export function useRegister() {
-    const register = useAuthStore((state) => state.register);
+    const register = useAuthStore((state: AuthState) => state.register);
 
     return useMutation({
         mutationFn: async (data: {
@@ -29,7 +31,7 @@ export function useRegister() {
 }
 
 export function useVerifyEmail() {
-    const verifyEmail = useAuthStore((state) => state.verifyEmail);
+    const verifyEmail = useAuthStore((state: AuthState) => state.verifyEmail);
 
     return useMutation({
         mutationFn: async (token: string) => {
@@ -39,28 +41,18 @@ export function useVerifyEmail() {
 }
 
 export function useResetPassword() {
-    const resetPassword = useAuthStore((state) => state.resetPassword);
+    const resetPassword = useAuthStore((state: AuthState) => state.resetPassword);
 
     return useMutation({
-        mutationFn: async (email: string) => {
-            return resetPassword(email);
-        },
-    });
-}
-
-export function useUpdatePassword() {
-    const updatePassword = useAuthStore((state) => state.updatePassword);
-
-    return useMutation({
-        mutationFn: async (data: { token: string; password: string }) => {
-            return updatePassword(data.token, data.password);
+        mutationFn: async (data: ResetPasswordData) => {
+            return resetPassword(data);
         },
     });
 }
 
 export function useUser() {
-    const user = useAuthStore((state) => state.user);
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const user = useAuthStore((state: AuthState) => state.user);
+    const isAuthenticated = useAuthStore((state: AuthState) => state.isAuthenticated);
 
     return useQuery({
         queryKey: ['user'],
@@ -75,7 +67,7 @@ export function useUser() {
 }
 
 export function useLogout() {
-    const logout = useAuthStore((state) => state.logout);
+    const logout = useAuthStore((state: AuthState) => state.logout);
 
     return useMutation({
         mutationFn: async () => {

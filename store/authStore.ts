@@ -18,7 +18,7 @@ interface User {
     profileImage?: string;
 }
 
-interface AuthState {
+export interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
