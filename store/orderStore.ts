@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import orderService, { Order, OrderItem } from '@/lib/services/order.service';
-import { OrderStatus } from '@/types/order';
 
 interface OrderState {
     orders: Order[];
@@ -21,12 +20,6 @@ interface OrderState {
     fetchOrderHistory: () => Promise<void>;
     trackOrder: (id: string) => Promise<any>;
     clearError: () => void;
-    getOrderById: (orderId: string) => Promise<void>;
-    getOrderTracking: (orderId: string) => Promise<void>;
-    rateOrder: (orderId: string, rating: number, review?: string) => Promise<void>;
-    getOrderHistory: () => Promise<void>;
-    requestRefund: (orderId: string, reason: string) => Promise<void>;
-    getOrderAnalytics: () => Promise<void>;
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -154,106 +147,6 @@ export const useOrderStore = create<OrderState>()(
             },
 
             clearError: () => set({ error: null }),
-
-            getOrderById: async (orderId: string) => {
-                try {
-                    set({ isLoading: true, error: null });
-                    const order = await orderService.getOrderById(orderId);
-                    set({ currentOrder: order, isLoading: false });
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to fetch order details',
-                        isLoading: false,
-                    });
-                }
-            },
-
-            getOrderTracking: async (orderId: string) => {
-                try {
-                    set({ isLoading: true, error: null });
-                    const tracking = await orderService.getOrderTracking(orderId);
-                    set((state) => ({
-                        currentOrder: state.currentOrder?.id === orderId
-                            ? { ...state.currentOrder, tracking }
-                            : state.currentOrder,
-                        isLoading: false,
-                    }));
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to get order tracking',
-                        isLoading: false,
-                    });
-                }
-            },
-
-            rateOrder: async (orderId: string, rating: number, review?: string) => {
-                try {
-                    set({ isLoading: true, error: null });
-                    await orderService.rateOrder(orderId, rating, review);
-                    set((state) => ({
-                        orders: state.orders.map((order) =>
-                            order.id === orderId ? { ...order, rating, review } : order
-                        ),
-                        currentOrder: state.currentOrder?.id === orderId
-                            ? { ...state.currentOrder, rating, review }
-                            : state.currentOrder,
-                        isLoading: false,
-                    }));
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to rate order',
-                        isLoading: false,
-                    });
-                }
-            },
-
-            getOrderHistory: async () => {
-                try {
-                    set({ isLoading: true, error: null });
-                    const history = await orderService.getOrderHistory();
-                    set({ orders: history, isLoading: false });
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to fetch order history',
-                        isLoading: false,
-                    });
-                }
-            },
-
-            requestRefund: async (orderId: string, reason: string) => {
-                try {
-                    set({ isLoading: true, error: null });
-                    await orderService.requestRefund(orderId, reason);
-                    set((state) => ({
-                        orders: state.orders.map((order) =>
-                            order.id === orderId ? { ...order, refundRequested: true } : order
-                        ),
-                        currentOrder: state.currentOrder?.id === orderId
-                            ? { ...state.currentOrder, refundRequested: true }
-                            : state.currentOrder,
-                        isLoading: false,
-                    }));
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to request refund',
-                        isLoading: false,
-                    });
-                }
-            },
-
-            getOrderAnalytics: async () => {
-                try {
-                    set({ isLoading: true, error: null });
-                    const analytics = await orderService.getOrderAnalytics();
-                    set({ isLoading: false });
-                    return analytics;
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to get order analytics',
-                        isLoading: false,
-                    });
-                }
-            },
         }),
         {
             name: 'order-storage',
