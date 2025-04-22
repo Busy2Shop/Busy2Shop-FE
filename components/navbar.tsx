@@ -45,7 +45,9 @@ export default function Navbar() {
                         </span>
                     </button>
 
-                    <Button className="hidden md:flex bg-[#00A67E] hover:bg-[#008F6B] text-white">Login</Button>
+                    <Link href="/auth/login">
+                        <Button className="hidden md:flex bg-[#00A67E] hover:bg-[#008F6B] text-white">Login</Button>
+                    </Link>
 
                     <Avatar className="h-10 w-10">
                         <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
@@ -80,7 +82,9 @@ export default function Navbar() {
             {/* Mobile menu */}
             {isMenuOpen && (
                 <div className="md:hidden bg-white border-t p-4">
-                    <Button className="w-full bg-[#00A67E] hover:bg-[#008F6B] text-white mb-2">Login</Button>
+                    <Link href="/auth/login" className="block w-full">
+                        <Button className="w-full bg-[#00A67E] hover:bg-[#008F6B] text-white mb-2">Login</Button>
+                    </Link>
                     <nav className="space-y-2">
                         <Link href="/" className="flex items-center p-2 bg-[#00A67E] text-white rounded-md">
                             <span className="mr-3">🏠</span>
