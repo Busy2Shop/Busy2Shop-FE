@@ -4,11 +4,12 @@ import { getToken } from './lib/auth';
 
 // Add paths that don't require authentication
 const publicPaths = [
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password',
-    '/verify-email',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/otp-verification',
     '/markets',
     '/shop-by-ingredient',
     '/',
@@ -32,11 +33,12 @@ const protectedRoutes = [
 
 // List of routes that should redirect authenticated users
 const redirectIfAuthenticated = [
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password',
-    '/verify-email',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/otp-verification',
 ];
 
 export function middleware(request: NextRequest) {
@@ -57,7 +59,7 @@ export function middleware(request: NextRequest) {
     // Protect routes that require authentication
     if (requiresAuth && !token) {
         // Store the intended URL to redirect back after login
-        const redirectUrl = new URL('/login', request.url);
+        const redirectUrl = new URL('/auth/login', request.url);
         redirectUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(redirectUrl);
     }

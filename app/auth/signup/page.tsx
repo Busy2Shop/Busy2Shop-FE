@@ -10,18 +10,50 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
-import { signUpSchema } from "@/lib/validations/auth"
-import { useRegister } from "@/hooks/use-auth"
+import { useAuthStore } from "@/store/authStore"
 import { toast } from "react-toastify"
 
-type SignUpFormData = z.infer<typeof signUpSchema>
+interface SignUpFormData {
+    email: string
+    password: string
+    confirmPassword: string
+    firstName: string
+    lastName: string
+    dob?: string
+    gender?: string
+    location?: {
+        country?: string
+        city?: string
+        address?: string
+    }
+    phone?: {
+        countryCode?: string
+        number?: string
+    }
+}
+
+const signUpSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z
+        .string()
+        .min(8, { message: "Password must be at least 8 characters long" })
+        .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+        .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+        .regex(/[0-9]/, { message: "Password must contain at least one number" })
+        .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" }),
+    confirmPassword: z.string(),
+    firstName: z.string().min(1, { message: "First name is required" }),
+    lastName: z.string().min(1, { message: "Last name is required" }),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+})
 
 export default function SignUpPage() {
     const router = useRouter()
-    const register = useRegister()
+    const { register, isLoading, error, clearError } = useAuthStore()
     const [step, setStep] = useState(1)
     const [userType, setUserType] = useState<"agent" | "customer" | null>(null)
-    const [isLoading, setIsLoading] = useState(false)
 
     // Form data
     const [formData, setFormData] = useState<SignUpFormData>({
@@ -51,27 +83,20 @@ export default function SignUpPage() {
                 z.string().email({ message: "Please enter a valid email address" }).parse(value)
             } else if (field === "password") {
                 z.string()
-                    .min(8, { message: "Password must be at least 8 characters" })
+                    .min(8, { message: "Password must be at least 8 characters long" })
                     .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
                     .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
                     .regex(/[0-9]/, { message: "Password must contain at least one number" })
+                    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" })
                     .parse(value)
-            } else if (field === "confirmPassword") {
-                if (value !== formData.password) {
-                    throw new Error("Passwords do not match")
-                }
             } else if (field === "firstName" || field === "lastName") {
-                z.string().min(1, { message: `${field === "firstName" ? "First name" : "Last name"} is required` }).parse(value)
+                z.string().min(1, { message: `${field} is required` }).parse(value)
             }
-
-            // Clear error if validation passes
             setErrors((prev) => ({ ...prev, [field]: undefined }))
             return true
         } catch (error) {
             if (error instanceof z.ZodError) {
                 setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }))
-            } else if (error instanceof Error) {
-                setErrors((prev) => ({ ...prev, [field]: error.message }))
             }
             return false
         }
@@ -79,8 +104,6 @@ export default function SignUpPage() {
 
     const handleInputChange = (field: keyof SignUpFormData, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }))
-
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: undefined }))
         }
@@ -94,30 +117,25 @@ export default function SignUpPage() {
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsLoading(true)
+        clearError()
 
         try {
             // Validate the entire form
             signUpSchema.parse(formData)
 
             // Call the registration mutation
-            await register.mutateAsync({
+            await register({
                 email: formData.email,
                 password: formData.password,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
-                userType: userType || "customer", // Default to customer if not set
             })
 
             // Show success message
             toast.success("Registration successful! Please check your email for verification.")
 
-            // Redirect based on user type
-            if (userType === "agent") {
-                router.push("/auth/agent-registration")
-            } else {
-                router.push("/auth/otp-verification")
-            }
+            // Redirect to OTP verification
+            router.push("/auth/otp-verification")
         } catch (error) {
             if (error instanceof z.ZodError) {
                 // Convert ZodError to a more usable format
@@ -130,10 +148,8 @@ export default function SignUpPage() {
                 setErrors(fieldErrors)
             } else {
                 // Handle API errors
-                toast.error("Registration failed. Please try again.")
+                toast.error(error?.response?.data?.message || "Registration failed. Please try again.")
             }
-        } finally {
-            setIsLoading(false)
         }
     }
 

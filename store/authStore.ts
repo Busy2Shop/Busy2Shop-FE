@@ -11,8 +11,9 @@ import authService, {
 interface User {
     id: string;
     email: string;
-    name: string;
-    role: 'customer';
+    firstName: string;
+    lastName: string;
+    role: 'customer' | 'agent';
     isEmailVerified: boolean;
     profileImage?: string;
 }
@@ -39,6 +40,7 @@ interface AuthState {
 
     // Auth actions
     login: (credentials: LoginCredentials) => Promise<void>;
+    googleLogin: () => Promise<void>;
     register: (data: Omit<RegisterData, 'role'>) => Promise<void>;
     logout: () => Promise<void>;
 
@@ -88,18 +90,48 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     set({ isLoading: true, error: null });
                     const response = await authService.login(credentials);
+
+                    console.log('login response in auth store', response);
                     const { user, accessToken, refreshToken } = response;
 
-                    if (user.role !== 'customer') {
+                    console.log('user in auth store', user);
+
+                    if (user.status.userType !== 'customer' && user.status.userType !== 'agent') {
                         throw new Error('Invalid account type');
                     }
+                    console.log('login response in auth store BEFFORE saving cookies');
 
+                    // Set tokens
                     setToken(accessToken);
                     setRefreshToken(refreshToken);
-                    set({ user, isAuthenticated: true, isLoading: false });
+
+                    console.log('login response in auth store after saving cookies');
+
+                    // Update state
+                    set({
+                        user,
+                        isAuthenticated: true,
+                        isLoading: false,
+                        error: null
+                    });
+
+                    return response;
                 } catch (error: any) {
                     set({
-                        error: error.response?.data?.message || 'Login failed',
+                        isLoading: false,
+                        error: error?.response?.data?.message || 'Login failed'
+                    });
+                    throw error;
+                }
+            },
+
+            googleLogin: async () => {
+                try {
+                    set({ isLoading: true, error: null });
+                    await authService.googleLogin();
+                } catch (error: any) {
+                    set({
+                        error: error.response?.data?.message || 'Google login failed',
                         isLoading: false,
                     });
                     throw error;
@@ -113,9 +145,7 @@ export const useAuthStore = create<AuthState>()(
                         ...data,
                         role: 'customer',
                     });
-                    const { user, accessToken, refreshToken } = response;
-                    setToken(accessToken);
-                    setRefreshToken(refreshToken);
+                    const { user } = response;
                     set({ user, isAuthenticated: true, isLoading: false });
                 } catch (error: any) {
                     set({
@@ -130,7 +160,6 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     set({ isLoading: true, error: null });
                     await authService.logout();
-                    removeToken();
                     set({
                         user: null,
                         isAuthenticated: false,
@@ -141,8 +170,7 @@ export const useAuthStore = create<AuthState>()(
                         error: error.response?.data?.message || 'Logout failed',
                         isLoading: false,
                     });
-                    // Still remove tokens and user data on error
-                    removeToken();
+                    // Still clear user data on error
                     set({ user: null, isAuthenticated: false });
                     throw error;
                 }
@@ -263,14 +291,8 @@ export const useAuthStore = create<AuthState>()(
 
             changePassword: async (currentPassword: string, newPassword: string) => {
                 try {
-                    set({ isLoading: true, error: null });
                     await authService.changePassword(currentPassword, newPassword);
-                    set({ isLoading: false });
                 } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to change password',
-                        isLoading: false,
-                    });
                     throw error;
                 }
             },
@@ -284,9 +306,9 @@ export const useAuthStore = create<AuthState>()(
                             error: null,
                         },
                     }));
-                    const updatedUser = await authService.updateProfile(data);
+                    const response = await authService.updateProfile(data);
                     set((state) => ({
-                        user: updatedUser,
+                        user: response.user,
                         profileUpdate: {
                             ...state.profileUpdate,
                             isUpdating: false,
@@ -306,15 +328,10 @@ export const useAuthStore = create<AuthState>()(
 
             refreshUserData: async () => {
                 try {
-                    set({ isLoading: true, error: null });
-                    const userData = await authService.getLoggedUserData();
-                    set({ user: userData, isLoading: false });
-                } catch (error: any) {
-                    set({
-                        error: error.response?.data?.message || 'Failed to refresh user data',
-                        isLoading: false,
-                    });
-                    throw error;
+                    const response = await authService.getLoggedUserData();
+                    set({ user: response.user, isAuthenticated: true });
+                } catch (error) {
+                    set({ user: null, isAuthenticated: false });
                 }
             },
 
