@@ -19,17 +19,17 @@ export default function OnboardingPage() {
         {
             title: "Shop any market",
             description: "Chat with agents and have your shopping delivered to your doorstep",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "/images/onboarding-1.png",
         },
         {
             title: "No stress shopping",
             description: "Forget about traffic jams and long queues. Shop from the comfort of your home",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "/images/onboarding-2.png",
         },
         {
             title: "Refer, shop, earn",
             description: "Earn cash when your friends shop with us",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "/images/onboarding-3.png",
         },
     ]
 
