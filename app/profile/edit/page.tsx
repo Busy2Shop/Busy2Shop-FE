@@ -50,7 +50,7 @@ export default function EditProfilePage() {
                             <div className="flex flex-col items-center">
                                 <div className="relative mb-2">
                                     <Avatar className="h-24 w-24 border-2 border-white">
-                                        <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Lucy Gina" />
+                                        <AvatarImage src="/images/Avatar.png" alt="Lucy Gina" />
                                         <AvatarFallback>LG</AvatarFallback>
                                     </Avatar>
                                     <div className="absolute bottom-0 right-0 bg-white rounded-full p-1">

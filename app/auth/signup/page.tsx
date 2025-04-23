@@ -150,17 +150,12 @@ export default function SignUpPage() {
             <div className="hidden md:flex md:w-1/2 bg-[#00A67E] items-center justify-center">
                 <div className="w-64">
                     <Image
-                        src="/placeholder.svg?height=200&width=200"
+                        src="/busy2shop-splash.png"
                         alt="Busy2Shop Logo"
                         width={200}
                         height={200}
                         className="mx-auto"
                     />
-                    <h1 className="text-4xl font-bold text-center">
-                        <span className="text-[#FF6B00]">Busy</span>
-                        <span className="text-white">2</span>
-                        <span className="text-white">Shop</span>
-                    </h1>
                 </div>
             </div>
 

@@ -50,7 +50,7 @@ export default function Navbar() {
                     </Link>
 
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
+                        <AvatarImage src="/images/Avatar.png" alt="User" />
                         <AvatarFallback>LW</AvatarFallback>
                     </Avatar>
 

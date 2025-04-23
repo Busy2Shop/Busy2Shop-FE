@@ -10,24 +10,24 @@ import { useState } from "react"
 
 // Food items for Shop by Ingredients section
 const foodItems = [
-    { name: "Jollof Rice", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Porridge", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Egusi Soup", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Okro Soup", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Rice & Stew", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Okro Soup", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Porridge", image: "/placeholder.svg?height=100&width=100" },
-    { name: "Rice & Stew", image: "/placeholder.svg?height=100&width=100" },
+    { name: "Jollof Rice", image: "/images/dish-1.png" },
+    { name: "Porridge", image: "/images/dish-2.png" },
+    { name: "Egusi Soup", image: "/images/dish-3.png" },
+    { name: "Okro Soup", image: "/images/dish-4.png" },
+    { name: "Rice & Stew", image: "/images/dish-5.png" },
+    { name: "Okro Soup", image: "/images/dish-1.png" },
+    { name: "Porridge", image: "/images/dish-2.png" },
+    { name: "Rice & Stew", image: "/images/dish-3.png" },
 ]
 
 // Markets for Markets section
 const markets = [
-    { name: "Supermarkets", image: "/placeholder.svg?height=200&width=300" },
-    { name: "Local Markets", image: "/placeholder.svg?height=200&width=300" },
-    { name: "Computer Village", image: "/placeholder.svg?height=200&width=300" },
-    { name: "Water/ Drinks (sangotedo)", image: "/placeholder.svg?height=200&width=300" },
-    { name: "Alaba International Market", image: "/placeholder.svg?height=200&width=300" },
-    { name: "Original Vietnam Hair ...", image: "/placeholder.svg?height=200&width=300" },
+    { name: "Supermarkets", image: "/images/supermarket.png" },
+    { name: "Local Markets", image: "/images/localmarket.png" },
+    { name: "Computer Village", image: "/images/computer-village.png" },
+    { name: "Water/ Drinks (sangotedo)", image: "/images/water-drinks.png" },
+    { name: "Alaba International Market", image: "/images/alaba-market.png" },
+    { name: "Original Vietnam Hair ...", image: "/images/hair-market.png" },
 ]
 
 export default function HomeContent() {
@@ -39,7 +39,7 @@ export default function HomeContent() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                 <div className="flex items-center mb-4 md:mb-0">
                     <Avatar className="h-12 w-12 mr-3">
-                        <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Lucy" />
+                        <AvatarImage src="/images/Avatar.png" alt="Lucy" />
                         <AvatarFallback>LW</AvatarFallback>
                     </Avatar>
                     <div>
@@ -63,7 +63,7 @@ export default function HomeContent() {
                         <div key={index} className="flex flex-col items-center">
                             <div className="rounded-full overflow-hidden mb-2 border">
                                 <Image
-                                    src={item.image || "/placeholder.svg"}
+                                    src={item.image || "/images/dish-1.png"}
                                     alt={item.name}
                                     width={80}
                                     height={80}
@@ -77,28 +77,15 @@ export default function HomeContent() {
             </div>
 
             {/* Promotion Banner */}
-            <div className="relative mb-8 rounded-lg overflow-hidden">
-                <div className="relative h-[200px] bg-gradient-to-r from-black to-[#FFB800] flex items-center">
-                    <div className="absolute inset-0 flex">
-                        <div className="w-3/5 p-8 flex flex-col justify-center">
-                            <div className="text-white">
-                                <div className="text-8xl font-bold">
-                                    70<span className="text-4xl align-top">%</span>
-                                </div>
-                                <div className="text-3xl font-bold">OFF</div>
-                                <div className="text-sm mt-2">SPECIAL OFFER</div>
-                            </div>
-                        </div>
-                        <div className="w-2/5 flex items-center justify-center">
-                            <div className="bg-[#FFB800] rounded-full h-32 w-32 flex items-center justify-center">
-                                <div className="text-center">
-                                    <div className="text-xl font-bold">SHOP</div>
-                                    <div className="text-lg">ONLINE</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <div className="mb-8">
+                <div className="relative h-[200px] rounded-lg overflow-hidden">
+                    <Image
+                        src="/images/banner.png"
+                        alt="Special Offer Banner"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
                         {[0, 1, 2, 3, 4].map((index) => (
                             <button
@@ -107,18 +94,6 @@ export default function HomeContent() {
                                 onClick={() => setActiveSlide(index)}
                             />
                         ))}
-                    </div>
-
-                    <div className="absolute bottom-4 right-4 flex space-x-2">
-                        <button className="bg-white rounded-full p-1">
-                            <Twitter className="h-4 w-4" />
-                        </button>
-                        <button className="bg-white rounded-full p-1">
-                            <Facebook className="h-4 w-4" />
-                        </button>
-                        <button className="bg-white rounded-full p-1">
-                            <Instagram className="h-4 w-4" />
-                        </button>
                     </div>
                 </div>
             </div>
@@ -143,17 +118,22 @@ export default function HomeContent() {
 
             {/* Referral Banner */}
             <div className="rounded-lg overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-[#00A67E] to-[#FFB800] p-6 flex flex-col md:flex-row">
-                    <div className="md:w-2/3 text-white mb-4 md:mb-0">
-                        <h2 className="text-2xl font-bold mb-3">Refer & Earn!</h2>
+                <div className="relative bg-gradient-to-r from-[#32B768] via-[#A16207] to-[#EA580C] p-6 flex items-center">
+                    <div className="flex-1 text-white">
+                        <h2 className="text-2xl font-bold mb-2">Refer & Earn!</h2>
                         <p className="mb-4">
                             Invite your friends & family and you will both get instant cash rewards upon purchase.
                         </p>
-                        <Button className="bg-[#FF0000] hover:bg-[#D90000] text-white border-none">Share Now</Button>
+                        <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white border-none">Share Now</Button>
                     </div>
-                    <div className="md:w-1/3 flex justify-center">
-                        <div className="relative h-[120px] w-[200px]">
-                            <Image src="/placeholder.svg?height=120&width=200" alt="Referral" fill className="object-contain" />
+                    <div className="flex-1 flex justify-end">
+                        <div className="relative h-[160px] w-[300px]">
+                            <Image 
+                                src="/images/refer-and-earn.png" 
+                                alt="Two girls celebrating referral rewards" 
+                                fill 
+                                className="object-contain object-right"
+                            />
                         </div>
                     </div>
                 </div>

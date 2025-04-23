@@ -6,30 +6,30 @@ import Sidebar from "@/components/sidebar"
 import Navbar from "@/components/navbar"
 
 const markets = [
-    { name: "Supermarkets", image: "/placeholder.svg?height=200&width=300", href: "/markets/supermarkets" },
+    { name: "Supermarkets", image: "/images/supermarket.png", href: "/markets/supermarkets" },
     {
         name: "Water/ Drinks (Sangotedo Warehouse)",
-        image: "/placeholder.svg?height=200&width=300",
+        image: "/images/water-drinks.png",
         href: "/markets/water-drinks",
     },
     {
         name: "Local Markets near you",
-        image: "/placeholder.svg?height=200&width=300",
+        image: "/images/localmarket.png",
         highlight: true,
         href: "/markets/local",
     },
-    { name: "Alaba International Market", image: "/placeholder.svg?height=200&width=300", href: "/markets/alaba" },
-    { name: "Computer Village", image: "/placeholder.svg?height=200&width=300", href: "/markets/computer-village" },
+    { name: "Alaba International Market", image: "/images/alaba-market.png", href: "/markets/alaba" },
+    { name: "Computer Village", image: "/images/computer-village.png", href: "/markets/computer-village" },
     {
         name: "Original Vietnam Hair Importation",
-        image: "/placeholder.svg?height=200&width=300",
+        image: "/images/hair-market.png",
         href: "/markets/vietnam-hair",
     },
-    { name: "Wine & Liquor", image: "/placeholder.svg?height=200&width=300", href: "/markets/wine-liquor" },
-    { name: "Furniture", image: "/placeholder.svg?height=200&width=300", href: "/markets/furniture" },
-    { name: "Mile 2 Market", image: "/placeholder.svg?height=200&width=300", href: "/markets/mile-2" },
-    { name: "Balogun Market", image: "/placeholder.svg?height=200&width=300", href: "/markets/balogun" },
-    { name: "Trade Fair", image: "/placeholder.svg?height=200&width=300", href: "/markets/trade-fair" },
+    { name: "Wine & Liquor", image: "/images/water-drinks.png", href: "/markets/wine-liquor" },
+    { name: "Furniture", image: "/images/supermarket.png", href: "/markets/furniture" },
+    { name: "Mile 2 Market", image: "/images/localmarket.png", href: "/markets/mile-2" },
+    { name: "Balogun Market", image: "/images/localmarket.png", href: "/markets/balogun" },
+    { name: "Trade Fair", image: "/images/alaba-market.png", href: "/markets/trade-fair" },
 ]
 
 export default function MarketsPage() {

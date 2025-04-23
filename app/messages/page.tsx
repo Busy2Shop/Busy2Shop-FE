@@ -39,7 +39,7 @@ export default function MessagesPage() {
             lastMessage: "Hello! How can I help you today?",
             timestamp: "12:04PM",
             unread: 1,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [
                 {
                     id: "1",
@@ -66,7 +66,7 @@ export default function MessagesPage() {
             lastMessage: "I'll check if they have that in stock.",
             timestamp: "11:23AM",
             unread: 1,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -76,7 +76,7 @@ export default function MessagesPage() {
             lastMessage: "Your order has been confirmed.",
             timestamp: "9:46AM",
             unread: 1,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -86,7 +86,7 @@ export default function MessagesPage() {
             lastMessage: "I'll be there in 20 minutes.",
             timestamp: "9:16AM",
             unread: 1,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -96,7 +96,7 @@ export default function MessagesPage() {
             lastMessage: "Do you need anything else?",
             timestamp: "Yesterday",
             unread: 4,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -106,7 +106,7 @@ export default function MessagesPage() {
             lastMessage: "Your order is on the way.",
             timestamp: "Yesterday",
             unread: 0,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -116,7 +116,7 @@ export default function MessagesPage() {
             lastMessage: "I found the items you requested.",
             timestamp: "24/2/25",
             unread: 0,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -126,7 +126,7 @@ export default function MessagesPage() {
             lastMessage: "Your delivery is scheduled for tomorrow.",
             timestamp: "22/2/25",
             unread: 0,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
         {
@@ -136,7 +136,7 @@ export default function MessagesPage() {
             lastMessage: "I'll send you the receipt shortly.",
             timestamp: "21/1/25",
             unread: 0,
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "/images/Avatar.png",
             messages: [],
         },
     ]

@@ -8,7 +8,7 @@ export default function WelcomeSection() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div className="flex items-center mb-4 md:mb-0">
                 <Avatar className="h-12 w-12 mr-3">
-                    <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Lucy" />
+                    <AvatarImage src="/images/Avatar.png" alt="Lucy" />
                     <AvatarFallback>LW</AvatarFallback>
                 </Avatar>
                 <div>
