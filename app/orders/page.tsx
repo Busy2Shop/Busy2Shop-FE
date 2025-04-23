@@ -140,7 +140,7 @@ export default function OrdersPage() {
 
                             {/* Map */}
                             <div className="rounded-lg overflow-hidden border h-[500px] relative">
-                                <Image src="/placeholder.svg?height=500&width=800" alt="Map" fill className="object-cover" />
+                                <Image src="/images/Map.png" alt="Map" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-white/10"></div>
 
                                 {/* Map elements would go here in a real implementation */}
@@ -228,7 +228,7 @@ export default function OrdersPage() {
                             <div className="border-t pt-6">
                                 <div className="flex items-center">
                                     <Avatar className="h-12 w-12 mr-3">
-                                        <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Jacob Jones" />
+                                        <AvatarImage src="/images/Avatar.png" alt="Jacob Jones" />
                                         <AvatarFallback>JJ</AvatarFallback>
                                     </Avatar>
                                     <div>

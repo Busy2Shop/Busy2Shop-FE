@@ -90,7 +90,7 @@ export default function NewAddressPage() {
                     </div>
 
                     <div className="h-full w-full">
-                        <Image src="/placeholder.svg?height=800&width=800" alt="Map" fill className="object-cover" />
+                        <Image src="/images/Map.png" alt="Map" fill className="object-cover" />
                     </div>
 
                     <div className="absolute bottom-4 right-4 z-10">
