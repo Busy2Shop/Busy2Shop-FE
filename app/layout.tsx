@@ -20,6 +20,10 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Busy2shop",
   description: "Your online shopping companion",
+  icons: {
+    icon: '/busy2shop-splash.png',
+    apple: '/busy2shop-splash.png',
+  },
 }
 
 export default async function RootLayout({
