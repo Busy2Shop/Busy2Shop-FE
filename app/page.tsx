@@ -1,7 +1,6 @@
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import HomeContent from "@/components/home-content"
-import OrderSummary from "@/components/order-summary"
 
 export default function Home() {
   return (
@@ -12,9 +11,6 @@ export default function Home() {
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <HomeContent />
         </main>
-        <div className="hidden lg:block w-[300px] border-l p-4">
-          <OrderSummary />
-        </div>
       </div>
     </div>
   )

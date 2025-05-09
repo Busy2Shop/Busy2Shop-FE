@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Plus, Twitter, Facebook, Instagram } from "lucide-react"
+import { Plus } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
@@ -34,7 +34,7 @@ export default function HomeContent() {
     const [activeSlide, setActiveSlide] = useState(0)
 
     return (
-        <div className="max-w-[1200px] mx-auto">
+        <div className="max-w-[900px] px-4">
             {/* Welcome Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                 <div className="flex items-center mb-4 md:mb-0">

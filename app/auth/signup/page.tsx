@@ -147,16 +147,15 @@ export default function SignUpPage() {
     return (
         <div className="flex min-h-screen">
             {/* Left side - Logo */}
-            <div className="hidden md:flex md:w-1/2 bg-[#00A67E] items-center justify-center">
-                <div className="w-64">
-                    <Image
-                        src="/busy2shop-splash.png"
-                        alt="Busy2Shop Logo"
-                        width={200}
-                        height={200}
-                        className="mx-auto"
-                    />
-                </div>
+            <div className="hidden md:flex md:w-1/2 items-center justify-center relative bg-white">
+                <Image
+                    src="/busy2shop-new-splash.png"
+                    alt="Busy2Shop Splash"
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    className="absolute inset-0 w-full h-full"
+                    priority
+                />
             </div>
 
             {/* Right side - Form */}
@@ -166,41 +165,21 @@ export default function SignUpPage() {
                         <>
                             <h2 className="text-2xl font-bold text-center text-[#00A67E] mb-2">Sign up</h2>
                             <p className="text-center text-gray-600 mb-8">Choose your role to continue</p>
-
                             <div className="space-y-4">
                                 <button
-                                    className={`w-full p-4 border rounded-md flex items-center justify-center ${userType === "customer" ? "border-[#00A67E]" : "border-gray-300"
-                                        }`}
+                                    className={`w-full p-4 border rounded-md flex items-center justify-center ${userType === "customer" ? "border-[#00A67E]" : "border-gray-300"}`}
                                     onClick={() => setUserType("customer")}
                                 >
                                     <div className="flex items-center">
                                         <div
-                                            className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 ${userType === "customer" ? "bg-[#00A67E] text-white" : "bg-gray-100 text-gray-500"
-                                                }`}
+                                            className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 ${userType === "customer" ? "bg-[#00A67E] text-white" : "bg-gray-100 text-gray-500"}`}
                                         >
                                             <User className="h-5 w-5" />
                                         </div>
-                                        <span>Sign up as a Customer</span>
-                                    </div>
-                                </button>
-
-                                <button
-                                    className={`w-full p-4 border rounded-md flex items-center justify-center ${userType === "agent" ? "border-[#00A67E]" : "border-gray-300"
-                                        }`}
-                                    onClick={() => setUserType("agent")}
-                                >
-                                    <div className="flex items-center">
-                                        <div
-                                            className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 ${userType === "agent" ? "bg-[#00A67E] text-white" : "bg-gray-100 text-gray-500"
-                                                }`}
-                                        >
-                                            <Users className="h-5 w-5" />
-                                        </div>
-                                        <span>Sign up as an Agent</span>
+                                        <span>Sign up as an Individual</span>
                                     </div>
                                 </button>
                             </div>
-
                             <div className="mt-8">
                                 <Button
                                     className="w-full bg-[#00A67E] hover:bg-[#008F6B]"

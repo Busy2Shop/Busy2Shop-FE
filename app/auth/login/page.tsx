@@ -107,16 +107,15 @@ function LoginForm() {
     return (
         <div className="flex min-h-screen">
             {/* Left side - Logo */}
-            <div className="hidden md:flex md:w-1/2 bg-[#00A67E] items-center justify-center">
-                <div className="w-64">
-                    <Image
-                        src="/busy2shop-splash.png"
-                        alt="Busy2Shop Logo"
-                        width={200}
-                        height={200}
-                        className="mx-auto"
-                    />
-                </div>
+            <div className="hidden md:flex md:w-1/2 items-center justify-center relative bg-white">
+                <Image
+                    src="/busy2shop-new-splash.png"
+                    alt="Busy2Shop Splash"
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    className="absolute inset-0 w-full h-full"
+                    priority
+                />
             </div>
 
             {/* Right side - Form */}

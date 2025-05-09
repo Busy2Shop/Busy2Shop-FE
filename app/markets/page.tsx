@@ -39,7 +39,7 @@ export default function MarketsPage() {
             <div className="flex flex-1 flex-col md:flex-row max-w-[1440px] mx-auto w-full">
                 <Sidebar />
                 <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-                    <div className="max-w-[1200px] mx-auto">
+                    <div className="max-w-[900px] mx-auto">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center">
                                 <Link href="/" className="mr-3">
