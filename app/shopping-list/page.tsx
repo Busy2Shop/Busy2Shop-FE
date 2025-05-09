@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, ChevronLeft, List, ChefHat } from "lucide-react"
+import { Plus, ChevronLeft, List, ChefHat, Trash2 } from "lucide-react"
 import Navbar from "@/components/navbar"
+import { useRouter } from "next/navigation"
 
 interface ShoppingItem {
     id: number
@@ -72,6 +73,7 @@ export default function ShoppingListPage() {
     const [items, setItems] = useState<ShoppingItem[]>([])
     const [newItem, setNewItem] = useState("")
     const [selectedPreviousList, setSelectedPreviousList] = useState<number | null>(null)
+    const router = useRouter()
 
     // Handlers for item logic
     const addItem = () => {
@@ -172,7 +174,7 @@ export default function ShoppingListPage() {
                                                 className="h-8 w-8 text-red-500"
                                                 onClick={() => removeItem(item.id)}
                                             >
-                                                🗑️
+                                                <Trash2 className="h-5 w-5" />
                                             </button>
                                         </div>
                                     </div>
@@ -218,7 +220,7 @@ export default function ShoppingListPage() {
                                             className="h-6 w-6 text-red-500"
                                             onClick={() => removeItem(item.id)}
                                         >
-                                            🗑️
+                                            <Trash2 className="h-5 w-5" />
                                         </button>
                                     </div>
                                 ))}
@@ -257,7 +259,7 @@ export default function ShoppingListPage() {
                                             <div className="flex gap-2">
                                                 <button className="border border-[#00A67E] text-[#00A67E] rounded px-3 py-1 text-sm font-medium">Edit List</button>
                                                 <button className="bg-[#00A67E] text-white rounded px-3 py-1 text-sm font-medium">Reorder List</button>
-                                                <button className="ml-2 text-red-500 hover:text-red-700"><span role="img" aria-label="delete">🗑️</span></button>
+                                                <button className="ml-2 text-red-500 hover:text-red-700"><Trash2 className="h-5 w-5" /></button>
                                             </div>
                                         </div>
                                     </div>
@@ -279,7 +281,7 @@ export default function ShoppingListPage() {
                                                 {list.items.map((item, idx) => (
                                                     <div key={idx} className="flex justify-between items-center border-b pb-2">
                                                         <span>{item.name}{item.quantity ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ""})` : ""}</span>
-                                                        <button className="h-6 w-6 text-red-500"><span role="img" aria-label="delete">🗑️</span></button>
+                                                        <button className="h-6 w-6 text-red-500"><Trash2 className="h-5 w-5" /></button>
                                                     </div>
                                                 ))}
                                             </div>
@@ -334,7 +336,7 @@ export default function ShoppingListPage() {
                             {/* Shop by Ingredient */}
                             <div
                                 className={`flex-1 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-all border-2 ${selectedOption === "ingredient" ? "bg-[#00A67E] border-[#00A67E] text-white" : "bg-white border-gray-200 text-gray-700 hover:border-[#00A67E]"}`}
-                                onClick={() => setSelectedOption("ingredient")}
+                                onClick={() => router.push("/shop-by-ingredient")}
                             >
                                 <ChefHat className="h-8 w-8 mb-3" />
                                 <div className="font-semibold text-lg mb-1">Shop by Ingredient</div>

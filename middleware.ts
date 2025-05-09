@@ -17,18 +17,19 @@ const publicPaths = [
 
 // List of protected routes that require authentication
 const protectedRoutes = [
-    '/checkout',
-    '/orders',
-    '/cart/checkout',
-    '/cart/place-order',
-    '/orders/create',
-    '/orders/update',
-    '/orders/cancel',
-    '/orders/chat',
-    '/wallet',
-    '/profile',
-    '/address',
-    '/messages',
+    '/dummy',
+    // '/checkout',
+    // '/orders',
+    // '/cart/checkout',
+    // '/cart/place-order',
+    // '/orders/create',
+    // '/orders/update',
+    // '/orders/cancel',
+    // '/orders/chat',
+    // '/wallet',
+    // '/profile',
+    // '/address',
+    // '/messages',
 ];
 
 // List of routes that should redirect authenticated users
