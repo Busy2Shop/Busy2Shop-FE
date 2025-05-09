@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 interface ChatMessage {
     id: string
@@ -25,6 +26,15 @@ interface Chat {
     unread: number
     avatar: string
     messages: ChatMessage[]
+    ended?: boolean
+}
+
+// Helper for time ago
+function getTimeAgo(timestamp: string) {
+    // For demo, handle 'Just now', '4d ago', etc. If timestamp is a date, use date-fns
+    if (timestamp === 'Just now' || timestamp.endsWith('ago')) return timestamp;
+    // Otherwise, fallback to showing the timestamp
+    return timestamp;
 }
 
 export default function MessagesPage() {
@@ -58,6 +68,7 @@ export default function MessagesPage() {
                 { id: "5", content: "That will be all. Thanks", sender: "user", timestamp: "12:50 AM" },
                 { id: "6", content: "", sender: "user", timestamp: "01:00 AM", isVoice: true, voiceDuration: "0:14" },
             ],
+            ended: true,
         },
         {
             id: "2",
@@ -164,42 +175,36 @@ export default function MessagesPage() {
                     <div className="w-full md:w-[400px] border-r">
                         <div className="p-4 border-b">
                             <h1 className="text-2xl font-bold mb-4">Messages</h1>
-                            <div className="border rounded-md p-4">
+                            <div className="rounded-md p-4">
                                 <h2 className="font-semibold mb-3">Chats</h2>
                                 <div className="relative mb-4">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                                     <Input placeholder="Search" className="pl-10 pr-4 py-2 w-full rounded-md border border-gray-300" />
                                 </div>
 
-                                <div className="space-y-0 divide-y">
-                                    {chats.map((chat) => (
+                                <div className="space-y-6">
+                                    {chats.map((chat, idx) => (
                                         <div
                                             key={chat.id}
-                                            className={`py-3 cursor-pointer hover:bg-gray-50 ${activeChat === chat.id ? "bg-gray-50" : ""}`}
+                                            className={`bg-white rounded-xl shadow-md px-6 py-4 flex items-center gap-4 cursor-pointer transition-all ${activeChat === chat.id ? 'ring-2 ring-[#00A67E]' : ''}`}
                                             onClick={() => setActiveChat(chat.id)}
                                         >
-                                            <div className="flex items-center">
-                                                <Avatar className="h-10 w-10 mr-3">
+                                            <div className="relative">
+                                                <Avatar className="h-12 w-12">
                                                     <AvatarImage src={chat.avatar} alt={chat.name} />
-                                                    <AvatarFallback>
-                                                        {chat.name
-                                                            .split(" ")
-                                                            .map((n) => n[0])
-                                                            .join("")}
-                                                    </AvatarFallback>
+                                                    <AvatarFallback>{chat.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                                                 </Avatar>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-center">
-                                                        <h3 className="font-medium truncate">{chat.name}</h3>
-                                                        <span className="text-xs text-gray-500">{chat.timestamp}</span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-500 truncate">{chat.market}</p>
-                                                </div>
-                                                {chat.unread > 0 && (
-                                                    <div className="ml-2 bg-[#00A67E] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                                        {chat.unread}
-                                                    </div>
+                                                {idx === 0 && (
+                                                    <span className="absolute bottom-1 right-1 block h-3 w-3 rounded-full bg-[#00A67E] border-2 border-white" />
                                                 )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-base truncate mb-1">{chat.lastMessage}</div>
+                                                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                                    <span className="font-semibold text-gray-800">{chat.name}</span>
+                                                    <span className="mx-1">•</span>
+                                                    <span>{getTimeAgo(chat.timestamp)}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -274,33 +279,41 @@ export default function MessagesPage() {
                                             </div>
                                         ))}
                                     </div>
+                                    {activeChatData?.ended && (
+                                        <>
+                                            <hr className="my-8 border-gray-200" />
+                                            <div className="text-center text-gray-500 py-8 text-lg">Your conversation has ended</div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Message Input */}
-                                <div className="border-t p-3 flex items-center">
-                                    <button className="p-2 text-gray-500">
-                                        <Image className="h-5 w-5" />
-                                    </button>
-                                    <button className="p-2 text-gray-500">
-                                        <Mic className="h-5 w-5" />
-                                    </button>
-                                    <div className="flex-1 mx-2">
-                                        <Input
-                                            placeholder="Type you message here..."
-                                            className="w-full border-gray-300"
-                                            value={newMessage}
-                                            onChange={(e) => setNewMessage(e.target.value)}
-                                            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                                        />
+                                {!activeChatData?.ended && (
+                                    <div className="border-t p-3 flex items-center">
+                                        <button className="p-2 text-gray-500">
+                                            <Image className="h-5 w-5" />
+                                        </button>
+                                        <button className="p-2 text-gray-500">
+                                            <Mic className="h-5 w-5" />
+                                        </button>
+                                        <div className="flex-1 mx-2">
+                                            <Input
+                                                placeholder="Type you message here..."
+                                                className="w-full border-gray-300"
+                                                value={newMessage}
+                                                onChange={(e) => setNewMessage(e.target.value)}
+                                                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                                            />
+                                        </div>
+                                        <button
+                                            className={`p-2 rounded-full ${newMessage.trim() ? "text-[#00A67E]" : "text-gray-300"}`}
+                                            onClick={sendMessage}
+                                            disabled={!newMessage.trim()}
+                                        >
+                                            <Send className="h-5 w-5" />
+                                        </button>
                                     </div>
-                                    <button
-                                        className={`p-2 rounded-full ${newMessage.trim() ? "text-[#00A67E]" : "text-gray-300"}`}
-                                        onClick={sendMessage}
-                                        disabled={!newMessage.trim()}
-                                    >
-                                        <Send className="h-5 w-5" />
-                                    </button>
-                                </div>
+                                )}
                             </>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center p-4">
