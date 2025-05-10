@@ -9,6 +9,7 @@ import Link from "next/link"
 import Image from "next/image"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
+import { useRouter } from "next/navigation"
 
 interface Order {
     id: string
@@ -23,6 +24,7 @@ interface Order {
 export default function OrdersPage() {
     const [activeTab, setActiveTab] = useState("ongoing")
     const [trackingOrder, setTrackingOrder] = useState<string | null>(null)
+    const router = useRouter()
 
     const orders: Order[] = [
         {
@@ -336,7 +338,7 @@ export default function OrdersPage() {
 
                                         <div className="p-4 flex justify-between items-center">
                                             {order.status === "processing" ? (
-                                                <Button className="bg-[#00A67E] hover:bg-[#008F6B]">Checkout</Button>
+                                                <Button className="bg-[#00A67E] hover:bg-[#008F6B]" onClick={() => router.push("/checkout")}>Checkout</Button>
                                             ) : order.canTrack ? (
                                                 <Button
                                                     variant="ghost"

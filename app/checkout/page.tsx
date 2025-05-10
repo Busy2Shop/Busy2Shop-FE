@@ -31,7 +31,7 @@ export default function CheckoutPage() {
     const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-gray-50 max-w-[1440px] ml-8">
             {/* Header */}
             <div className="sticky top-0 z-10 bg-white p-4 border-b">
                 <div className="flex items-center">
@@ -151,8 +151,7 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            {/* Fixed Bottom Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+            <div className="bg-white border-t mb-10">
                 <Button className="w-full bg-[#00A67E] hover:bg-[#008F6B] py-6 text-lg">Continue to Payment</Button>
             </div>
         </div>
