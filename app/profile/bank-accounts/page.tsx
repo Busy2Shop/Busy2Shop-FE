@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, Plus, BanknoteIcon as Bank, ChevronDown } from "lucide-react"
+import { ChevronLeft, Plus, BanknoteIcon as Bank, ChevronDown, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Navbar from "@/components/navbar"
@@ -23,6 +23,24 @@ export default function BankAccountsPage() {
         },
     ])
     const [showAddAccount, setShowAddAccount] = useState(false)
+    const nigerianBanks = [
+        "Access Bank",
+        "GTBank",
+        "First Bank",
+        "UBA",
+        "Zenith Bank",
+        "Fidelity Bank",
+        "Union Bank",
+        "Sterling Bank",
+        "Polaris Bank",
+        "Wema Bank",
+        "Ecobank",
+        "Stanbic IBTC",
+        "Keystone Bank",
+        "FCMB",
+        "Heritage Bank"
+    ];
+    const [selectedBank, setSelectedBank] = useState("");
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -32,9 +50,9 @@ export default function BankAccountsPage() {
                     {!showAddAccount ? (
                         <>
                             <div className="mb-6">
-                                <Link href="/profile" className="inline-flex items-center text-gray-600">
-                                    <ChevronLeft className="h-5 w-5 mr-1" />
-                                    <span>Bank Accounts</span>
+                                <Link href="/profile" className="flex items-center mb-4 text-gray-700 hover:text-gray-900">
+                                    <ArrowLeft className="h-5 w-5 mr-2" />
+                                    Back to Profile
                                 </Link>
                             </div>
 
@@ -75,10 +93,14 @@ export default function BankAccountsPage() {
                     ) : (
                         <>
                             <div className="flex justify-between items-center mb-6">
-                                <Link href="/profile/bank-accounts" className="inline-flex items-center text-gray-600">
+                                <button
+                                    type="button"
+                                    onClick={() => window.location.reload()}
+                                    className="inline-flex items-center text-gray-600"
+                                >
                                     <ChevronLeft className="h-5 w-5 mr-1" />
                                     <span>Bank Accounts</span>
-                                </Link>
+                                </button>
                                 <Button className="bg-[#00A67E] hover:bg-[#008F6B]" onClick={() => setShowAddAccount(false)}>
                                     Save
                                 </Button>
@@ -87,12 +109,17 @@ export default function BankAccountsPage() {
                             <div className="bg-white rounded-lg border p-4">
                                 <div className="space-y-4">
                                     <div>
-                                        <div className="relative">
-                                            <Button variant="outline" className="w-full justify-between">
-                                                <span className="text-gray-500">Select Bank</span>
-                                                <ChevronDown className="h-4 w-4 ml-2" />
-                                            </Button>
-                                        </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Bank</label>
+                                        <select
+                                            className="w-full p-2 border rounded-md text-gray-700"
+                                            value={selectedBank}
+                                            onChange={e => setSelectedBank(e.target.value)}
+                                        >
+                                            <option value="">Select Bank</option>
+                                            {nigerianBanks.map(bank => (
+                                                <option key={bank} value={bank}>{bank}</option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     <div>

@@ -3,9 +3,10 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import Navbar from "@/components/navbar"
+import { toast } from "react-toastify"
 
 export default function TransactionPinPage() {
     const [pin, setPin] = useState(["", "", "", ""])
@@ -31,6 +32,11 @@ export default function TransactionPinPage() {
         }
     }
 
+    const handleSave = () => {
+        // In a real app, save the PIN securely
+        toast.success("PIN saved successfully")
+    };
+
     // Focus first input on mount
     useEffect(() => {
         inputRefs.current[0]?.focus()
@@ -42,9 +48,9 @@ export default function TransactionPinPage() {
             <div className="flex-1 max-w-[1440px] mx-auto w-full p-4 md:p-6">
                 <div className="max-w-[500px] mx-auto">
                     <div className="mb-6">
-                        <Link href="/profile" className="inline-flex items-center text-gray-600">
-                            <ChevronLeft className="h-5 w-5 mr-1" />
-                            <span>Transaction Pin</span>
+                        <Link href="/profile" className="flex items-center mb-4 text-gray-700 hover:text-gray-900">
+                            <ArrowLeft className="h-5 w-5 mr-2" />
+                            Back to Profile
                         </Link>
                     </div>
 
@@ -68,6 +74,13 @@ export default function TransactionPinPage() {
                                 />
                             ))}
                         </div>
+
+                        <button
+                            className="bg-[#00A67E] hover:bg-[#008F6B] text-white font-semibold py-2 px-8 rounded mb-6"
+                            onClick={handleSave}
+                        >
+                            Save
+                        </button>
 
                         <p className="text-xs text-gray-500 text-center">
                             By continuing, you agree to our{" "}

@@ -3,12 +3,13 @@
 import type React from "react"
 
 import { useState } from "react"
-import { ChevronRight, Edit2 } from "lucide-react"
+import { ChevronRight, Edit2, ArrowLeft } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
+import Link from "next/link"
 
 export default function EditProfilePage() {
     const [formData, setFormData] = useState({
@@ -44,6 +45,11 @@ export default function EditProfilePage() {
                                 Save Changes
                             </Button>
                         </div>
+
+                        <Link href="/profile" className="flex items-center mb-4 text-gray-700 hover:text-gray-900">
+                            <ArrowLeft className="h-5 w-5 mr-2" />
+                            Back to Profile
+                        </Link>
 
                         {/* Profile Card */}
                         <div className="bg-[#00A67E] text-white rounded-lg p-6 mb-6">

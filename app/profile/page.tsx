@@ -1,5 +1,5 @@
 "use client"
-import { User, Building, Key, Bell, Users, ChevronRight, LogOut, Edit2 } from "lucide-react"
+import { User, Building, Key, Bell, Users, ChevronRight, LogOut, Edit2, AlertCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
                             <Link
                                 href="/profile/transaction-pin"
-                                className="flex items-center justify-between p-4 border-b hover:bg-gray-50"
+                                className="flex items-center justify-between border-b p-4 hover:bg-gray-50"
                             >
                                 <div className="flex items-center">
                                     <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
@@ -79,30 +79,6 @@ export default function ProfilePage() {
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-gray-400" />
                             </Link>
-
-                            <div className="flex items-center justify-between p-4 border-b hover:bg-gray-50">
-                                <div className="flex items-center">
-                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="text-gray-600"
-                                        >
-                                            <path d="M7 12a5 5 0 1 0 5-5 5 5 0 0 0-5 5Z" />
-                                            <path d="M22 12c-1.8-5.5-7-9-12-9S-.2 6.5 2 12c1.8 5.5 7 9 12 9s10.2-3.5 8-9Z" />
-                                        </svg>
-                                    </div>
-                                    <span>Enable Biometrics</span>
-                                </div>
-                                <Switch />
-                            </div>
 
                             <Link
                                 href="/profile/notifications"
@@ -117,12 +93,22 @@ export default function ProfilePage() {
                                 <ChevronRight className="h-5 w-5 text-gray-400" />
                             </Link>
 
-                            <Link href="/profile/refer" className="flex items-center justify-between p-4 hover:bg-gray-50">
+                            <Link href="/profile/refer" className="flex items-center justify-between border-b p-4 hover:bg-gray-50">
                                 <div className="flex items-center">
                                     <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                                         <Users className="h-5 w-5 text-gray-600" />
                                     </div>
                                     <span>Refer & Earn</span>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-gray-400" />
+                            </Link>
+
+                            <Link href="/profile/report-issue" className="flex items-center justify-between p-4 hover:bg-gray-50">
+                                <div className="flex items-center">
+                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                        <AlertCircle className="h-5 w-5 text-gray-600" />
+                                    </div>
+                                    <span>Report an Issue</span>
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-gray-400" />
                             </Link>
