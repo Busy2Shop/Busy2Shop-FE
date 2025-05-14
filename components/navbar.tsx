@@ -39,7 +39,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-4">
                         <Link href="/" className="flex items-center gap-2">
                             <Image src="/images/logo-for-white-bg.png" alt="Logo" width={36} height={36} className="rounded-full" />
-                            <span className="text-2xl font-bold tracking-tight">
+                            <span className="text-[#00A67E] text-2xl font-bold tracking-tight">
                                 Busy
                                 <span className="text-[#FF6B00]">2</span>
                                 <span className="text-[#00A67E]">Shop</span>

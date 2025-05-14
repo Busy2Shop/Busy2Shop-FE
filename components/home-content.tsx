@@ -199,6 +199,21 @@ export default function HomeContent() {
 
     return (
         <div className="w-full p-12 pt-0">
+            {/* HOT Deals Flash Banner */}
+            <div className="w-full mb-6">
+                <div className="relative flex items-center justify-between bg-primary rounded-2xl shadow-2xl p-8 text-white overflow-hidden" style={{boxShadow: '0 8px 32px 0 rgba(0,166,126,0.25)', background: 'linear-gradient(135deg, #00A67E 60%, #00C896 100%)'}}>
+                    <div className="flex flex-col gap-2 z-10">
+                        <span className="text-4xl font-extrabold drop-shadow-lg tracking-tight">HOT Deals</span>
+                        <span className="text-lg font-medium opacity-90">Flash sales & trending offers, just for you!</span>
+                    </div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pointer-events-none">
+                        <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-30">
+                            <circle cx="90" cy="90" r="90" fill="#fff" />
+                        </svg>
+                    </div>
+                    <span className="absolute top-4 right-8 bg-white text-secondary-foreground font-bold px-4 py-1 rounded-full shadow-md text-lg z-20 animate-pulse border-2 border-primary">HOT</span>
+                </div>
+            </div>
             <div className="flex gap-6 items-end">
                 {/* Main Content (2/3 width) */}
                 <div className="w-2/3">
@@ -379,48 +394,63 @@ export default function HomeContent() {
                 </div>
 
                 {/* Side Content (1/3 width) */}
-                <div className="w-1/3 flex flex-col gap-6">
-                    {/* Welcome Section with Shopping List */}
-                    <div className="bg-white rounded-lg p-6 shadow-md">
-                        <div className="flex items-center mb-4">
-                            <Avatar className="h-12 w-12 mr-3">
-                                <AvatarImage src="/images/Avatar.png" alt="Lucy" />
-                                <AvatarFallback>LW</AvatarFallback>
-                            </Avatar>
+                <div className="w-1/3 flex flex-col gap-8">
+                    {/* Tablet-style Sell on Busy2Shop Card */}
+                    <div
+                        className="rounded-3xl p-6 shadow-lg relative flex flex-col items-stretch"
+                        style={{
+                            background: "linear-gradient(135deg, #FF7A00 60%, #FFB800 100%)",
+                            boxShadow: "0 8px 32px 0 rgba(255,122,0,0.15)",
+                            minHeight: 420,
+                        }}
+                    >
+                        {/* Sell on Busy2Shop Action Button */}
+                        <Link
+                            href={"/sell"}
+                            className="w-full flex items-center justify-center bg-white text-[#FF7A00] hover:bg-[#FFB800] hover:text-white font-bold text-base py-3 rounded-xl shadow transition-colors mb-4 border-2 border-[#FF7A00] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                            style={{ letterSpacing: 0.5 }}
+                        >
+                            <span className="mr-2">Become a Seller</span>
+                        </Link>
+                        <div className="flex items-center mb-3">
                             <div>
-                                <h2 className="text-xl font-medium">Hi, Lucy</h2>
-                                <p className="text-gray-600">Welcome back to waka2shop</p>
+                                <h2 className="text-sm font-semibold text-white mb-1">Want to reach more customers?</h2>
+                                <p className="text-xs text-white/90 leading-snug">List your products or get your business featured on our platform!</p>
                             </div>
                         </div>
+                        {/* Create Shopping List - Primary Action */}
                         <Link
                             href={"/shopping-list"}
                             className={cn(
                                 buttonVariants({ variant: "default" }),
-                                "w-full flex items-center justify-center bg-[#00A67E] hover:bg-[#008F6B] text-white"
+                                "w-full flex items-center justify-center bg-[#00A67E] text-white hover:bg-[#008F6B] font-extrabold text-lg py-4 rounded-2xl shadow-lg transition-colors mt-2 mb-7 border-2 border-white focus:outline-none focus:ring-2 focus:ring-[#00A67E]"
                             )}
+                            style={{ boxShadow: '0 4px 16px 0 rgba(0,166,126,0.18)' }}
                         >
-                            <Plus className="h-5 w-5 mr-2" />
+                            <Plus className="h-6 w-6 mr-2" />
                             Create Shopping List
                         </Link>
-                    </div>
-
-                    {/* IMPROVED CUBE SLIDER */}
-                    <div className="bg-white rounded-lg p-6 shadow-md">
-                        <h3 className="text-lg font-semibold mb-4">Special Offers</h3>
-                        <div className="relative h-[300px] w-full overflow-hidden rounded-lg cubePerspective">
-                            <div className={`absolute inset-0 transition-all duration-700 cubeSlide ${cubeDirection} ${isTransitioning ? 'active' : ''}`}>
+                        <div className="flex items-center my-2">
+                            <div className="flex-1 h-px bg-white/30" />
+                            <span className="mx-2 text-xs text-white/70 font-medium">Special Offers</span>
+                            <div className="flex-1 h-px bg-white/30" />
+                        </div>
+                        {/* Special Offers Cube Slider */}
+                        <div className="relative h-[220px] w-full overflow-hidden rounded-2xl mt-2 mb-1 bg-white/80 shadow-inner flex items-center justify-center">
+                            <div className={`absolute inset-0 transition-all duration-700 cubeSlide ${cubeDirection} ${isTransitioning ? 'active' : ''}`}
+                                style={{ padding: 12 }}>
                                 <Image
                                     src={promoBanners[currentCubeIndex].image}
                                     alt={promoBanners[currentCubeIndex].alt}
                                     fill
-                                    className="object-cover rounded-lg"
+                                    className="object-cover rounded-2xl"
                                 />
                             </div>
-                            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
                                 {promoBanners.map((_, index) => (
                                     <button
                                         key={index}
-                                        className={`w-2 h-2 rounded-full ${index === currentCubeIndex ? 'bg-white' : 'bg-white/50'}`}
+                                        className={`w-2.5 h-2.5 rounded-full border border-[#FF7A00] transition-all duration-200 ${index === currentCubeIndex ? 'bg-[#FF7A00]' : 'bg-white/70 hover:bg-[#FFB800]'}`}
                                         onClick={() => setCurrentCubeIndex(index)}
                                         aria-label={`Go to slide ${index + 1}`}
                                     />
@@ -431,7 +461,7 @@ export default function HomeContent() {
                 </div>
             </div>
             {/* Markets List */}
-            <div className="mb-8">
+            <div className="mb-8 mt-12">
                 <h2 className="text-2xl font-bold mb-6">Markets to Buy from</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {markets.map((market, index) => (
