@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, CreditCard, Banknote, Wallet2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Navbar from "@/components/navbar"
@@ -69,72 +69,52 @@ export default function AddFundsPage() {
                     )}
 
                     {step === 2 && (
-                        <div className="bg-white rounded-lg border p-6">
-                            <div className="space-y-4 mb-6">
+                        <div className="bg-white rounded-2xl border p-6">
+                            <div className="space-y-3 mb-6">
+                                {/* Wallet Option */}
                                 <div
-                                    className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === "wallet" ? "border-[#00A67E]" : ""
-                                        }`}
+                                    className={`flex items-center p-3 border rounded-lg cursor-pointer ${paymentMethod === "wallet" ? "border-[#00A67E] bg-[#F8F8F8]" : "border-gray-200"}`}
                                     onClick={() => setPaymentMethod("wallet")}
                                 >
-                                    <div className="mr-3">
-                                        <div
-                                            className={`h-5 w-5 rounded-full border flex items-center justify-center ${paymentMethod === "wallet" ? "border-[#00A67E]" : "border-gray-300"
-                                                }`}
-                                        >
-                                            {paymentMethod === "wallet" && <div className="h-3 w-3 rounded-full bg-[#00A67E]"></div>}
-                                        </div>
-                                    </div>
+                                    <Wallet2 className="h-6 w-6 mr-3 text-gray-700" />
                                     <div className="flex-1">
-                                        <div className="font-medium">Wallet</div>
-                                        <div className="text-xs text-gray-500">Balance: N500,000.00</div>
+                                        <div className="font-medium flex items-center gap-2">Wallet <span className="bg-gray-200 text-xs px-2 py-0.5 rounded ml-1">Default</span></div>
+                                        <div className="text-xs text-gray-500">Balance NGN3,900</div>
                                     </div>
+                                    <input type="radio" checked={paymentMethod === "wallet"} readOnly className="h-5 w-5 accent-[#00A67E]" />
                                 </div>
-
+                                {/* Card Option */}
                                 <div
-                                    className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === "card" ? "border-[#00A67E]" : ""
-                                        }`}
+                                    className={`flex items-center p-3 border rounded-lg cursor-pointer ${paymentMethod === "card" ? "border-[#00A67E] bg-[#F8F8F8]" : "border-gray-200"}`}
                                     onClick={() => setPaymentMethod("card")}
                                 >
-                                    <div className="mr-3">
-                                        <div
-                                            className={`h-5 w-5 rounded-full border flex items-center justify-center ${paymentMethod === "card" ? "border-[#00A67E]" : "border-gray-300"
-                                                }`}
-                                        >
-                                            {paymentMethod === "card" && <div className="h-3 w-3 rounded-full bg-[#00A67E]"></div>}
-                                        </div>
-                                    </div>
+                                    <CreditCard className="h-6 w-6 mr-3 text-gray-700" />
                                     <div className="flex-1">
-                                        <div className="font-medium">VISA</div>
-                                        <div className="text-xs text-gray-500">**** **** **** 2312</div>
+                                        <div className="font-medium flex items-center gap-2">VISA</div>
+                                        <div className="text-xs text-gray-500">**** **** **** 2512</div>
+                                        <div className="text-xs text-gray-400">Expiry 06/27</div>
                                     </div>
+                                    <input type="radio" checked={paymentMethod === "card"} readOnly className="h-5 w-5 accent-[#00A67E]" />
                                 </div>
-
+                                {/* Bank Transfer Option */}
                                 <div
-                                    className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === "bank" ? "border-[#00A67E]" : ""
-                                        }`}
+                                    className={`flex items-center p-3 border rounded-lg cursor-pointer ${paymentMethod === "bank" ? "border-[#00A67E] bg-[#F8F8F8]" : "border-gray-200"}`}
                                     onClick={() => setPaymentMethod("bank")}
                                 >
-                                    <div className="mr-3">
-                                        <div
-                                            className={`h-5 w-5 rounded-full border flex items-center justify-center ${paymentMethod === "bank" ? "border-[#00A67E]" : "border-gray-300"
-                                                }`}
-                                        >
-                                            {paymentMethod === "bank" && <div className="h-3 w-3 rounded-full bg-[#00A67E]"></div>}
-                                        </div>
-                                    </div>
+                                    <Banknote className="h-6 w-6 mr-3 text-gray-700" />
                                     <div className="flex-1">
                                         <div className="font-medium">Bank Transfer</div>
                                     </div>
+                                    <input type="radio" checked={paymentMethod === "bank"} readOnly className="h-5 w-5 accent-[#00A67E]" />
                                 </div>
                             </div>
-
-                            <Button
-                                className="w-full bg-[#00A67E] hover:bg-[#008F6B]"
+                            <button
+                                className="w-full bg-[#00A67E] hover:bg-[#008F6B] text-white font-semibold py-2 rounded text-lg"
                                 onClick={handleContinue}
                                 disabled={!paymentMethod}
                             >
                                 Continue
-                            </Button>
+                            </button>
                         </div>
                     )}
 

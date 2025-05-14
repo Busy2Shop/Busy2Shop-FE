@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, ArrowUpRight, ArrowDownLeft } from "lucide-react"
+import { ChevronLeft, CheckCircle2, RefreshCcw, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Navbar from "@/components/navbar"
@@ -22,7 +22,7 @@ export default function WalletPage() {
             id: "1",
             type: "payment",
             description: "Payment for groceries",
-            date: "2023-05-08",
+            date: "2023-05-09",
             amount: 9000,
         },
         {
@@ -54,61 +54,41 @@ export default function WalletPage() {
                     </div>
 
                     {/* Balance Card */}
-                    <div className="bg-[#00A67E] text-white rounded-lg p-6 mb-6">
-                        <div className="flex flex-col items-center">
-                            <h2 className="text-white/80 mb-2">Current Balance</h2>
-                            <div className="text-3xl font-bold mb-6">N{balance.toLocaleString()}.00</div>
-
-                            <div className="flex gap-4 w-full max-w-xs">
-                                <Link href="/wallet/withdraw" className="flex-1">
-                                    <Button
-                                        variant="default"
-                                        className="w-full border-white text-white hover:bg-white/20 hover:text-white bg-green-400"
-                                    >
-                                        Withdraw Funds
-                                    </Button>
-                                </Link>
-                                <Link href="/wallet/add-funds" className="flex-1">
-                                    <Button className="w-full text-white hover:bg-white/90 hover:text-white bg-blue-400 hover:bg-blue-500">
-                                        Add Funds
-                                    </Button>
-                                </Link>
-                            </div>
+                    <div className="bg-[#00A67E] text-white rounded-2xl p-8 mb-6 flex flex-col items-center">
+                        <div className="text-lg mb-2">Current Balance</div>
+                        <div className="text-4xl font-extrabold mb-6">N{balance.toLocaleString()}.00</div>
+                        <div className="flex gap-4 w-full max-w-xs justify-center">
+                            <Link href="/wallet/withdraw" className="flex-1">
+                                <button className="w-full bg-[#21B573] hover:bg-[#179e5d] text-white font-semibold py-2 rounded transition">Withdraw Funds</button>
+                            </Link>
+                            <Link href="/wallet/add-funds" className="flex-1">
+                                <button className="w-full bg-[#1DA1F2] hover:bg-[#178cd1] text-white font-semibold py-2 rounded transition">Add Funds</button>
+                            </Link>
                         </div>
                     </div>
 
                     {/* Transaction History */}
-                    <div className="bg-white rounded-lg border overflow-hidden">
+                    <div className="bg-white rounded-2xl border p-0 overflow-hidden">
                         <div className="p-4 border-b">
                             <h2 className="font-semibold">Transaction History</h2>
                         </div>
-
-                        <div className="divide-y">
-                            {transactions.map((transaction) => (
-                                <div key={transaction.id} className="p-4 flex items-center">
-                                    <div
-                                        className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 ${transaction.type === "payment"
-                                                ? "bg-red-100"
-                                                : transaction.type === "deposit"
-                                                    ? "bg-green-100"
-                                                    : "bg-green-100"
-                                            }`}
-                                    >
+                        <div>
+                            {transactions.map((transaction, idx) => (
+                                <div key={transaction.id} className="flex items-center px-4 py-3" style={{ borderBottom: idx !== transactions.length - 1 ? '1px solid #F1F1F1' : 'none' }}>
+                                    <div className="mr-3">
                                         {transaction.type === "payment" ? (
-                                            <ArrowUpRight className={`h-5 w-5 text-red-500`} />
+                                            <XCircle className="h-6 w-6 text-red-400" />
+                                        ) : transaction.type === "deposit" ? (
+                                            <CheckCircle2 className="h-6 w-6 text-green-400" />
                                         ) : (
-                                            <ArrowDownLeft className={`h-5 w-5 text-green-500`} />
+                                            <RefreshCcw className="h-6 w-6 text-blue-400" />
                                         )}
                                     </div>
-
                                     <div className="flex-1">
-                                        <div className="font-medium">{transaction.description}</div>
-                                        <div className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</div>
+                                        <div className="font-medium text-[15px]">{transaction.description}</div>
+                                        <div className="text-xs text-gray-400 mt-1">{transaction.date}</div>
                                     </div>
-
-                                    <div
-                                        className={`font-semibold ${transaction.type === "payment" ? "text-red-500" : "text-green-500"}`}
-                                    >
+                                    <div className={`font-semibold text-[15px] ${transaction.type === "payment" ? "text-red-500" : transaction.type === "deposit" ? "text-green-500" : "text-green-500"}`}>
                                         {transaction.type === "payment" ? "-" : "+"}N{transaction.amount.toLocaleString()}
                                     </div>
                                 </div>
