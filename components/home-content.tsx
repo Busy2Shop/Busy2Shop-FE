@@ -7,7 +7,8 @@ import { Plus, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import styles from "./home-content.module.css";
+import "./home-content.module.css";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 // Food items for Shop by Ingredients section
 const foodItems = [
@@ -101,6 +102,11 @@ export default function HomeContent() {
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const [selectedSidebar, setSelectedSidebar] = useState("Featured");
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    const categoriesRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
 
     // Cube Slider state
     const [currentCubeIndex, setCurrentCubeIndex] = useState(0);
@@ -197,49 +203,87 @@ export default function HomeContent() {
         }
     };
 
+    // Handle touch events for mobile categories
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setIsDragging(true);
+        setStartX(e.touches[0].pageX - (categoriesRef.current?.offsetLeft || 0));
+        setScrollLeft(categoriesRef.current?.scrollLeft || 0);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.touches[0].pageX - (categoriesRef.current?.offsetLeft || 0);
+        const walk = (x - startX) * 2;
+        if (categoriesRef.current) {
+            categoriesRef.current.scrollLeft = scrollLeft - walk;
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setIsDragging(false);
+    };
+
     return (
-        <div className="w-full p-12 pt-0">
+        <div className="w-full px-4 sm:px-6 md:px-12 pt-0">
             {/* HOT Deals Flash Banner */}
             <div className="w-full mb-6">
-                <div className="relative flex items-center justify-between bg-primary rounded-2xl shadow-2xl p-8 text-white overflow-hidden" style={{boxShadow: '0 8px 32px 0 rgba(0,166,126,0.25)', background: 'linear-gradient(135deg, #00A67E 60%, #00C896 100%)'}}>
+                <div
+                    className="relative flex items-center justify-between bg-primary rounded-2xl shadow-2xl p-4 sm:p-8 text-white overflow-hidden"
+                    style={{ boxShadow: "0 8px 32px 0 rgba(0,166,126,0.25)", background: "linear-gradient(135deg, #00A67E 60%, #00C896 100%)" }}
+                >
                     <div className="flex flex-col gap-2 z-10">
-                        <span className="text-4xl font-extrabold drop-shadow-lg tracking-tight">HOT Deals</span>
-                        <span className="text-lg font-medium opacity-90">Flash sales & trending offers, just for you!</span>
+                        <span className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg tracking-tight">HOT Deals</span>
+                        <span className="text-sm sm:text-lg font-medium opacity-90">Flash sales & trending offers, just for you!</span>
                     </div>
                     <div className="absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pointer-events-none">
                         <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-30">
                             <circle cx="90" cy="90" r="90" fill="#fff" />
                         </svg>
                     </div>
-                    <span className="absolute top-4 right-8 bg-white text-secondary-foreground font-bold px-4 py-1 rounded-full shadow-md text-lg z-20 animate-pulse border-2 border-primary">HOT</span>
+                    <span className="absolute top-4 right-8 bg-white text-secondary-foreground font-bold px-4 py-1 rounded-full shadow-md text-lg z-20 animate-pulse border-2 border-primary">
+                        HOT
+                    </span>
                 </div>
             </div>
-            <div className="flex gap-6 items-end">
+            <div className="flex flex-col lg:flex-row gap-6 items-end">
                 {/* Main Content (2/3 width) */}
-                <div className="w-2/3">
+                <div className="w-full lg:w-2/3">
                     {/* Shop by Categories Section */}
                     <div className="mb-8 relative">
-                        <div className="flex items-center gap-2 mb-2">
-                            <h2 className="text-2xl font-bold">Popular Categories</h2>
-                            <button
-                                ref={buttonRef}
-                                className="flex items-center gap-1 text-[#556070] text-base font-normal focus:outline-none focus:underline hover:underline p-0 bg-transparent border-none shadow-none"
-                                style={{ boxShadow: "none", border: "none" }}
-                                onClick={() => setShowCategories((v) => !v)}
-                                aria-expanded="false"
-                                aria-controls="categories-dropdown"
-                            >
-                                Select Category
-                                <ChevronDown className="w-4 h-4 ml-1" />
-                            </button>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <h2 className="text-xl sm:text-2xl font-bold">Popular Categories</h2>
+                            <div className="md:hidden">
+                                <Link href="/categories" className="text-sm text-[#556070] hover:text-[#00A67E] transition-colors">
+                                    Explore Categories
+                                </Link>
+                            </div>
+                            <div className="hidden md:block">
+                                <button
+                                    ref={buttonRef}
+                                    className="flex items-center gap-1 text-[#556070] text-base font-normal focus:outline-none focus:underline hover:underline p-0 bg-transparent border-none shadow-none"
+                                    onClick={() => setShowCategories((v) => !v)}
+                                    aria-expanded="false"
+                                    aria-controls="categories-dropdown"
+                                >
+                                    Select Category
+                                    <ChevronDown className="w-4 h-4 ml-1" />
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Featured/Popular Categories always visible */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-4">
+                        {/* Featured/Popular Categories - Now scrollable on mobile */}
+                        <div
+                            ref={categoriesRef}
+                            className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
                             {foodItems.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex flex-col items-center bg-white rounded-xl p-3 hover:scale-105 transition-transform cursor-pointer"
+                                    className="category-item flex-shrink-0 flex flex-col items-center bg-white rounded-xl p-3 hover:scale-105 transition-transform cursor-pointer"
                                 >
                                     <div className="rounded-full overflow-hidden mb-2 border-2 border-[#00A67E]/30">
                                         <Image
@@ -250,7 +294,7 @@ export default function HomeContent() {
                                             className="object-cover"
                                         />
                                     </div>
-                                    <span className="text-xs text-center font-semibold text-gray-700">{item.name}</span>
+                                    <span className="category-text text-center font-semibold text-gray-700">{item.name}</span>
                                 </div>
                             ))}
                         </div>
@@ -354,37 +398,25 @@ export default function HomeContent() {
                     </div>
 
                     {/* Promotion Banner */}
-                    <div>
-                        <div className="relative h-[300px] rounded-lg overflow-hidden">
-                            {promoBanners.map((banner, index) => (
-                                <div
-                                    key={index}
-                                    className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                                        index === activeSlide 
-                                            ? 'opacity-100 translate-x-0' 
-                                            : 'opacity-0 translate-x-full'
-                                    }`}
-                                >
-                                <Image
-                                        src={banner.image}
-                                        alt={banner.alt}
-                                        fill
-                                        className="object-cover"
-                                        priority={index === 0}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                    <div className="relative h-[200px] sm:h-[300px] rounded-lg overflow-hidden">
+                        {promoBanners.map((banner, index) => (
+                            <div
+                                key={index}
+                                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                                    index === activeSlide ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
+                                }`}
+                            >
+                                <Image src={banner.image} alt={banner.alt} fill className="object-cover" priority={index === 0} />
+                            </div>
+                        ))}
                         {/* Navigation Dots */}
                         <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
                             {promoBanners.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setActiveSlide(index)}
-                                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                                        index === activeSlide 
-                                            ? 'bg-white scale-125' 
-                                            : 'bg-white/50 hover:bg-white/75'
+                                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                                        index === activeSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
                                     }`}
                                     aria-label={`Go to slide ${index + 1}`}
                                 />
@@ -394,7 +426,7 @@ export default function HomeContent() {
                 </div>
 
                 {/* Side Content (1/3 width) */}
-                <div className="w-1/3 flex flex-col gap-8">
+                <div className="w-full lg:w-1/3 flex flex-col gap-8">
                     {/* Tablet-style Sell on Busy2Shop Card */}
                     <div
                         className="rounded-3xl p-6 shadow-lg relative flex flex-col items-stretch"
@@ -415,7 +447,9 @@ export default function HomeContent() {
                         <div className="flex items-center mb-3">
                             <div>
                                 <h2 className="text-sm font-semibold text-white mb-1">Want to reach more customers?</h2>
-                                <p className="text-xs text-white/90 leading-snug">List your products or get your business featured on our platform!</p>
+                                <p className="text-xs text-white/90 leading-snug">
+                                    List your products or get your business featured on our platform!
+                                </p>
                             </div>
                         </div>
                         {/* Create Shopping List - Primary Action */}
@@ -425,7 +459,7 @@ export default function HomeContent() {
                                 buttonVariants({ variant: "default" }),
                                 "w-full flex items-center justify-center bg-[#00A67E] text-white hover:bg-[#008F6B] font-extrabold text-lg py-4 rounded-2xl shadow-lg transition-colors mt-2 mb-7 border-2 border-white focus:outline-none focus:ring-2 focus:ring-[#00A67E]"
                             )}
-                            style={{ boxShadow: '0 4px 16px 0 rgba(0,166,126,0.18)' }}
+                            style={{ boxShadow: "0 4px 16px 0 rgba(0,166,126,0.18)" }}
                         >
                             <Plus className="h-6 w-6 mr-2" />
                             Create Shopping List
@@ -437,8 +471,12 @@ export default function HomeContent() {
                         </div>
                         {/* Special Offers Cube Slider */}
                         <div className="relative h-[220px] w-full overflow-hidden rounded-2xl mt-2 mb-1 bg-white/80 shadow-inner flex items-center justify-center">
-                            <div className={`absolute inset-0 transition-all duration-700 cubeSlide ${cubeDirection} ${isTransitioning ? 'active' : ''}`}
-                                style={{ padding: 12 }}>
+                            <div
+                                className={`absolute inset-0 transition-all duration-700 cubeSlide ${cubeDirection} ${
+                                    isTransitioning ? "active" : ""
+                                }`}
+                                style={{ padding: 12 }}
+                            >
                                 <Image
                                     src={promoBanners[currentCubeIndex].image}
                                     alt={promoBanners[currentCubeIndex].alt}
@@ -450,7 +488,9 @@ export default function HomeContent() {
                                 {promoBanners.map((_, index) => (
                                     <button
                                         key={index}
-                                        className={`w-2.5 h-2.5 rounded-full border border-[#FF7A00] transition-all duration-200 ${index === currentCubeIndex ? 'bg-[#FF7A00]' : 'bg-white/70 hover:bg-[#FFB800]'}`}
+                                        className={`w-2.5 h-2.5 rounded-full border border-[#FF7A00] transition-all duration-200 ${
+                                            index === currentCubeIndex ? "bg-[#FF7A00]" : "bg-white/70 hover:bg-[#FFB800]"
+                                        }`}
                                         onClick={() => setCurrentCubeIndex(index)}
                                         aria-label={`Go to slide ${index + 1}`}
                                     />
@@ -461,20 +501,20 @@ export default function HomeContent() {
                 </div>
             </div>
             {/* Markets List */}
-            <div className="mb-8 mt-12">
-                <h2 className="text-2xl font-bold mb-6">Markets to Buy from</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="mb-8 mt-8 sm:mt-12">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Markets to Buy from</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {markets.map((market, index) => (
                         <Link
                             href="/markets"
                             key={index}
                             className="border overflow-hidden shadow-md bg-white hover:scale-105 transition-transform block"
                         >
-                            <div className="h-[150px] relative">
+                            <div className="h-[120px] sm:h-[150px] relative">
                                 <Image src={market.image || "/placeholder.svg"} alt={market.name} fill className="object-cover" />
                             </div>
                             <div className="p-3 text-center">
-                                <h3 className="font-medium text-gray-800">{market.name}</h3>
+                                <h3 className="font-medium text-gray-800 text-sm sm:text-base">{market.name}</h3>
                             </div>
                         </Link>
                     ))}
@@ -482,15 +522,17 @@ export default function HomeContent() {
             </div>
 
             {/* Referral Banner */}
-            <div className="rounded-lg overflow-hidden mt-8">
-                <div className="relative bg-gradient-to-r from-[#32B768] via-[#A16207] to-[#EA580C] p-6 flex items-center">
-                    <div className="flex-1 text-white">
-                        <h2 className="text-2xl font-bold mb-2">Refer & Earn!</h2>
-                        <p className="mb-4">Invite your friends & family and you will both get instant cash rewards upon purchase.</p>
+            <div className="rounded-lg overflow-hidden mt-6 sm:mt-8">
+                <div className="relative bg-gradient-to-r from-[#32B768] via-[#A16207] to-[#EA580C] p-4 sm:p-6 flex flex-col sm:flex-row items-center">
+                    <div className="flex-1 text-white text-center sm:text-left">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-2">Refer & Earn!</h2>
+                        <p className="mb-4 text-sm sm:text-base">
+                            Invite your friends & family and you will both get instant cash rewards upon purchase.
+                        </p>
                         <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white border-none">Share Now</Button>
                     </div>
-                    <div className="flex-1 flex justify-end">
-                        <div className="relative h-[160px] w-[300px]">
+                    <div className="flex-1 flex justify-center sm:justify-end mt-4 sm:mt-0">
+                        <div className="relative h-[120px] sm:h-[160px] w-[240px] sm:w-[300px]">
                             <Image
                                 src="/images/refer-and-earn.png"
                                 alt="Two girls celebrating referral rewards"
@@ -504,3 +546,15 @@ export default function HomeContent() {
         </div>
     );
 }
+
+// Add this CSS to your home-content.module.css file
+const styles = `
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+`;
